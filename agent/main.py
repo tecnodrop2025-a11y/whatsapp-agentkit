@@ -83,15 +83,26 @@ async def webhook_handler(request: Request):
             # (brain.py agrega el mensaje actual, evitando duplicados)
             historial = await obtener_historial(msg.telefono)
 
-            # Generar respuesta con Claude
+            # Procesar el mensaje con el cerebro
             respuesta = await generar_respuesta(msg.texto, historial)
+
+            # --- NUEVA LÓGICA: Separar mensajes por párrafos para que sea más humano ---
+            import asyncio
+            # Dividir por doble salto de línea
+            bloques = [b.strip() for b in respuesta.split("\n\n") if b.strip()]
+            
+            for index, bloque in enumerate(bloques):
+                # Enviar cada bloque por separado
+                await proveedor.enviar_mensaje(msg.telefono, bloque)
+                
+                # Si no es el último bloque, esperar un poco para simular escritura humana
+                if index < len(bloques) - 1:
+                    await asyncio.sleep(1.5)  # Espera de 1.5 segundos entre mensajes
 
             # Guardar mensaje del usuario Y respuesta del agente en memoria
             await guardar_mensaje(msg.telefono, "user", msg.texto)
+            # Guardar el mensaje del asistente en memoria (como un solo bloque para contexto coherente)
             await guardar_mensaje(msg.telefono, "assistant", respuesta)
-
-            # Enviar respuesta por WhatsApp via el proveedor
-            await proveedor.enviar_mensaje(msg.telefono, respuesta)
 
             logger.info(f"Respuesta a {msg.telefono}: {respuesta}")
 
