@@ -1,0 +1,17 @@
+# Configuración del negocio — Generado por AgentKit
+negocio:
+  nombre: "Ventas en Santiago"
+  descripcion: "Venta de productos para el hogar con envío gratis a todo Santiago (excepto comunas rurales como Talagante, El monte, Lampa, Peñaflor, Isla de Maipo). Clientes de 30 a 65+ años."
+  horario: "Lunes a domingo 24/7"
+
+agente:
+  nombre: "Carla"
+  tono: "Vendedor y persuasivo"
+  casos_de_uso:
+    - "Responder preguntas frecuentes"
+    - "Calificar y atender prospectos (leads) / ventas"
+    - "Soporte post-venta"
+
+metadata:
+  creado: "2026-03-22"
+  version: "1.0"
