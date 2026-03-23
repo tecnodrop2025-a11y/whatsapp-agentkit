@@ -48,3 +48,12 @@ class ProveedorWhapi(ProveedorWhatsApp):
             if r.status_code != 200:
                 logger.error(f"Error Whapi: {r.status_code} — {r.text}")
             return r.status_code == 200
+
+    async def enviar_imagen(self, telefono: str, url: str, leyenda: str = "") -> bool:
+        """Envía imagen via Whapi.cloud."""
+        if not self.token: return False
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        payload = {"to": telefono, "media": url, "caption": leyenda}
+        async with httpx.AsyncClient() as client:
+            r = await client.post("https://gate.whapi.cloud/messages/image", json=payload, headers=headers)
+            return r.status_code == 200

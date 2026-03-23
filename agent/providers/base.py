@@ -33,6 +33,23 @@ class ProveedorWhatsApp(ABC):
         """Envía un mensaje de texto. Retorna True si fue exitoso."""
         ...
 
+    @abstractmethod
+    async def enviar_imagen(self, telefono: str, url: str, leyenda: str = "") -> bool:
+        """Envía una imagen (jpg, png, gif, webp) con leyenda opcional."""
+        ...
+
+    async def enviar_video(self, telefono: str, url: str, leyenda: str = "") -> bool:
+        """Envía un video (mp4, mov). Implementación opcional por proveedor."""
+        return False
+
+    async def enviar_documento(self, telefono: str, url: str, nombre: str = "archivo") -> bool:
+        """Envía un documento (pdf, docx, xlsx, etc.). Implementación opcional."""
+        return False
+
+    async def enviar_audio(self, telefono: str, url: str) -> bool:
+        """Envía un audio (mp3, ogg, wav). Implementación opcional."""
+        return False
+
     async def validar_webhook(self, request: Request) -> dict | int | None:
         """Verificación GET del webhook (solo Meta la requiere). Retorna respuesta o None."""
         return None

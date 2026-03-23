@@ -5,246 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carla Bot — Centro de Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #3b82f6; --bg: #0f172a; --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc; --text-dim: #94a3b8; --accent: #60a5fa; --success: #10b981;
+            --text-main: #f8fafc; --text-dim: #94a3b8; --accent: #60a5fa; --success: #10b981; --danger: #ef4444;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text-main);
-            background-image: radial-gradient(circle at top right, #1e293b, #0f172a); min-height: 100vh;
-        }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text-main); background-image: radial-gradient(circle at top right, #1e293b, #0f172a); min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
-        h1 { font-weight: 600; font-size: 1.8rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .dashboard { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; }
-        .sidebar { display: flex; flex-direction: column; gap: 0.5rem; }
-        .nav-item { 
-            padding: 1rem; border-radius: 12px; cursor: pointer; transition: 0.3s;
-            background: rgba(255,255,255,0.03); border: 1px solid transparent;
-        }
-        .nav-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); }
-        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
-        .main-card { 
-            background: var(--card-bg); backdrop-filter: blur(12px); padding: 2rem; border-radius: 24px; 
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            min-height: 600px;
-        }
-        h2 { margin-bottom: 1.5rem; font-weight: 600; color: var(--accent); }
-        textarea { 
-            width: 100%; height: 400px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: 12px; color: #e2e8f0; padding: 1.5rem; font-family: monospace; font-size: 0.95rem;
-            resize: vertical; outline: none; transition: 0.3s;
-        }
-        textarea:focus { border-color: var(--primary); }
-        .btn { padding: 0.8rem 2rem; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+        h1 { font-weight: 600; font-size: 1.6rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }
+        .sidebar { display: flex; flex-direction: column; gap: 0.8rem; }
+        .nav-item { padding: 1.1rem; border-radius: 14px; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 1rem; }
+        .nav-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); color: var(--accent); }
+        .nav-item.active { background: var(--primary); color: white; border-color: transparent; }
+        .main-card { background: var(--card-bg); backdrop-filter: blur(16px); padding: 2.2rem; border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); min-height: 600px; }
+        h2 { margin-bottom: 1.5rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 0.8rem; }
+        .section-box { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        select, input, textarea { width: 100%; padding: 0.9rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
+        textarea { font-family: monospace; resize: vertical; min-height: 350px; }
+        .btn { padding: 0.8rem 1.8rem; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 0.6rem; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
-        .knowledge-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-        .file-card { padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; text-align: center; }
-        
-        /* Estilos Chat en Vivo */
-        .chat-container { height: 500px; display: flex; flex-direction: column; background: rgba(0,0,0,0.2); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-        .message { max-width: 80%; padding: 0.8rem 1.2rem; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; position: relative; }
-        .msg-user { align-self: flex-start; background: #1e293b; color: white; border-bottom-left-radius: 4px; }
-        .msg-assistant { align-self: flex-end; background: #3b82f6; color: white; border-bottom-right-radius: 4px; }
-        .msg-admin { align-self: flex-end; background: #8b5cf6; color: white; border-bottom-right-radius: 4px; border: 1px solid white; }
-        .msg-meta { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 0.3rem; display: block; }
-        .chat-input { padding: 1rem; background: rgba(255,255,255,0.03); display: flex; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .chat-input input { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 0.8rem; outline: none; }
-        .phone-badge { font-size: 0.7rem; font-weight: 600; color: var(--accent); margin-bottom: 2px; display: block;}
-        
-        #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--success); color: white; padding: 1rem 2rem; border-radius: 12px; transform: translateY(100px); transition: 0.5s; z-index: 1000; }
-        #toast.show { transform: translateY(0); }
+        .btn-success { background: var(--success); color: white; }
+        .chat-container { height: 480px; background: rgba(0,0,0,0.3); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .message { max-width: 85%; padding: 0.7rem 1.1rem; border-radius: 16px; font-size: 0.9rem; }
+        .msg-user { align-self: flex-start; background: #1e293b; }
+        .msg-assistant { align-self: flex-end; background: var(--primary); }
+        #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--success); color: white; padding: 0.8rem 2rem; border-radius: 50px; transition: 0.5s; z-index: 5000; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div>
-                <h1>Carla Bot Dashboard</h1>
-                <p style="color: var(--text-dim); font-size: 0.9rem;">Centro de Mando Personalizado — Ventas en Santiago</p>
-            </div>
-            <div id="ws-status" style="font-size: 0.8rem; color: var(--success);">📡 WebSocket Conectado</div>
+            <h1>Carla Bot — Centro de Control</h1>
+            <div id="ws-status" style="color: var(--success); font-weight: 600; font-size: 0.8rem;">● CONECTADO</div>
         </header>
-
         <div class="dashboard">
             <div class="sidebar">
-                <div class="nav-item active" id="nav-live" onclick="showSection('live')">🔥 Chat en Vivo (Realtime)</div>
-                <div class="nav-item" id="nav-personality" onclick="showSection('personality')">🧠 Personalidad y Prompts</div>
-                <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')">📚 Base de Conocimientos</div>
+                <div class="nav-item active" id="nav-live" onclick="showSection('live')"><i class="fa-solid fa-bolt"></i> Chat en Vivo</div>
+                <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i class="fa-solid fa-plug"></i> Conexión WhatsApp</div>
+                <div class="nav-item" id="nav-personality" onclick="showSection('personality')"><i class="fa-solid fa-brain"></i> Personalidad</div>
+                <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')"><i class="fa-solid fa-database"></i> Conocimiento</div>
             </div>
-
             <main class="main-card">
-                <!-- SECCIÓN: CHAT EN VIVO -->
+                <div id="sec-connection" style="display: none;">
+                    <h2>Servicios y Conectividad</h2>
+                    <div class="section-box">
+                        <h3 style="margin-bottom:1.2rem; font-size:1rem;"><i class="fa-brands fa-whatsapp"></i> Canal de WhatsApp</h3>
+                        <div class="form-group">
+                            <label>Proveedor</label>
+                            <select id="prov-selector" onchange="toggleProvFields()">
+                                <option value="whapi">Whapi.cloud</option>
+                                <option value="meta">Meta Cloud API</option>
+                                <option value="textmebot">TextMeBot.com</option>
+                            </select>
+                        </div>
+                        <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token"></div></div>
+                        <div id="fields-meta" class="hidden">
+                            <div class="form-group"><label>Meta Admin Token</label><input type="text" id="meta-token"></div>
+                            <div class="form-group"><label>Phone ID</label><input type="text" id="meta-phone"></div>
+                            <div class="form-group"><label>WABA ID</label><input type="text" id="meta-waba"></div>
+                        </div>
+                        <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
+                    </div>
+                    <div class="section-box"><h3 style="margin-bottom:1.2rem; font-size:1rem;"><i class="fa-solid fa-brain"></i> Cerebro Claude</h3><div class="form-group"><label>Claude API Key</label><input type="text" id="anthropic-key"></div></div>
+                    <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Guardar Todo</button>
+                    <button class="btn btn-success" onclick="testLink()" style="margin-left:1rem;"><i class="fa-solid fa-vial"></i> Test</button>
+                </div>
                 <div id="sec-live">
-                    <h2>Mensajería en Vivo</h2>
+                    <h2>Monitor Realtime</h2>
                     <div class="chat-container">
-                        <div id="chat-messages" class="chat-messages">
-                            <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Esperando nuevos mensajes de clientes...</div>
-                        </div>
-                        <div class="chat-input" id="chat-controls" style="display: none;">
-                            <input type="text" id="manual-msg" placeholder="Escribe un mensaje de intervención..." onkeypress="handleEnter(event)">
-                            <button class="btn btn-primary" style="margin-top: 0;" onclick="sendManual()">Enviar</button>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1rem; color: var(--text-dim); font-size: 0.85rem;">
-                        💡 <strong>Intervención Manual:</strong> Los mensajes que envíes aquí aparecerán con borde blanco para diferenciarlos de Carla.
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input" id="chat-controls" style="display: none;"><input type="text" id="manual-msg" placeholder="Responder..."><button class="btn btn-primary" onclick="sendManual()"><i class="fa-solid fa-paper-plane"></i></button></div>
                     </div>
                 </div>
-
-                <!-- SECCIÓN: PERSONALIDAD -->
-                <div id="sec-personality" style="display: none;">
-                    <h2>Instrucciones Maestras</h2>
-                    <textarea id="prompt-editor" placeholder="Cargando config..."></textarea>
-                    <button class="btn btn-primary" onclick="saveConfig()">Guardar en el Cerebro</button>
-                </div>
-
-                <!-- SECCIÓN: CONOCIMIENTO -->
-                <div id="sec-knowledge" style="display: none;">
-                    <h2>Archivos de la Biblioteca</h2>
-                    <div id="knowledge-files" class="knowledge-list"></div>
-                    <div id="file-editor-container" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top:1px solid rgba(255,255,255,0.1);">
-                        <h3 id="editing-filename">Archivo</h3>
-                        <textarea id="file-editor" style="height: 300px;"></textarea>
-                        <button class="btn btn-primary" onclick="saveFile()">Guardar Archivo</button>
-                        <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="closeFileEditor()">Cancelar</button>
-                    </div>
-                </div>
+                <div id="sec-personality" style="display: none;"><h2>Prompts Maestros</h2><textarea id="prompt-editor" spellcheck="false"></textarea><button class="btn btn-primary" onclick="saveConfig()" style="margin-top:1rem;">Aplicar Cambios</button></div>
+                <div id="sec-knowledge" style="display: none;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;"><h2>Biblioteca</h2><button class="btn btn-primary" style="background:transparent; border:1px solid var(--primary);" onclick="createNewFile()">+ Nuevo</button></div><div id="knowledge-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1.2rem;"></div><div id="file-editor-container" class="hidden" style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:2rem;"><h3 id="editing-filename">Archivo</h3><textarea id="file-editor"></textarea><button class="btn btn-primary" onclick="saveFile()" style="margin-top:1rem;">Guardar Cambios</button></div></div>
             </main>
         </div>
     </div>
-
-    <div id="toast">¡Operación exitosa!</div>
-
+    <div id="toast">Éxito 🚀</div>
     <script>
-        let currentPhone = ""; // Para saber a quién responder en el live chat
-        let currentFile = "";
-        let ws;
-
-        // INICIALIZAR WEBSOCKET
-        function initWS() {
-            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${location.host}/ws/admin`);
-            
-            ws.onopen = () => { document.getElementById('ws-status').innerText = "📡 WebSocket Conectado"; };
-            ws.onclose = () => { 
-                document.getElementById('ws-status').innerText = "❌ Desconectado (Reconectando...)";
-                setTimeout(initWS, 3000);
-            };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if(data.type === 'new_message') {
-                    addMessageToChat(data);
-                }
-            };
-        }
-
-        function addMessageToChat(data) {
-            const chatBox = document.getElementById('chat-messages');
-            if(chatBox.innerText.includes("Esperando")) chatBox.innerHTML = "";
-            
-            const div = document.createElement('div');
-            const role = data.author; // 'user', 'assistant', 'admin'
-            div.className = `message msg-${role}`;
-            
-            currentPhone = data.phone; // Guardar el último teléfono activo
-            document.getElementById('chat-controls').style.display = 'flex';
-            
-            const meta = role === 'user' ? `<span class="phone-badge">${data.phone}</span>` : '';
-            div.innerHTML = `${meta}${data.text}<span class="msg-meta">${role.toUpperCase()} • ${new Date().toLocaleTimeString()}</span>`;
-            
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        async function sendManual() {
-            const text = document.getElementById('manual-msg').value;
-            if(!text || !currentPhone) return;
-            
-            const res = await fetch('/api/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: currentPhone, text: text })
-            });
-            
-            if(res.ok) {
-                document.getElementById('manual-msg').value = "";
-            }
-        }
-
-        function handleEnter(e) { if(e.key === 'Enter') sendManual(); }
-
-        // --- LÓGICA DE SECCIONES ---
+        let currentPhone = ""; let currentFile = ""; let ws;
         function showSection(name) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById('nav-' + name).classList.add('active');
-            
-            ['live', 'personality', 'knowledge'].forEach(s => {
-                document.getElementById('sec-' + s).style.display = (s === name ? 'block' : 'none');
-            });
-            
-            if(name === 'personality') loadConfig();
+            ['live', 'connection', 'personality', 'knowledge'].forEach(s => document.getElementById('sec-' + s).style.display = (s === name ? 'block' : 'none'));
+            if(name === 'connection') loadEnv();
             if(name === 'knowledge') loadKnowledge();
+            if(name === 'personality') loadConfig();
         }
-
-        async function loadConfig() {
-            const res = await fetch('/api/config');
-            const data = await res.json();
-            document.getElementById('prompt-editor').value = JSON.stringify(data, null, 2);
+        function toggleProvFields() {
+            const p = document.getElementById('prov-selector').value;
+            document.getElementById('fields-whapi').style.display = p === 'whapi' ? 'block' : 'none';
+            document.getElementById('fields-meta').style.display = p === 'meta' ? 'block' : 'none';
+            document.getElementById('fields-textmebot').style.display = p === 'textmebot' ? 'block' : 'none';
         }
-
-        async function saveConfig() {
-            const res = await fetch('/api/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: document.getElementById('prompt-editor').value
-            });
-            if(res.ok) showToast();
+        async function loadEnv() {
+            const res = await fetch('/api/env'); const d = await res.json();
+            document.getElementById('prov-selector').value = d.WHATSAPP_PROVIDER;
+            document.getElementById('whapi-token').value = d.WHAPI_TOKEN || "";
+            document.getElementById('meta-token').value = d.META_ACCESS_TOKEN || "";
+            document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || "";
+            document.getElementById('meta-waba').value = d.META_WABA_ID || "";
+            document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || "";
+            document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || "";
+            toggleProvFields();
         }
-
-        async function loadKnowledge() {
-            const res = await fetch('/api/knowledge');
-            const data = await res.json();
-            const container = document.getElementById('knowledge-files');
-            container.innerHTML = "";
-            data.files.forEach(file => {
-                const div = document.createElement('div');
-                div.className = "file-card";
-                div.innerHTML = `📄<br><strong>${file}</strong>`;
-                div.onclick = () => openFile(file);
-                container.appendChild(div);
-            });
+        async function saveSettings() {
+            const p = {
+                WHATSAPP_PROVIDER: document.getElementById('prov-selector').value,
+                WHAPI_TOKEN: document.getElementById('whapi-token').value,
+                META_ACCESS_TOKEN: document.getElementById('meta-token').value,
+                META_PHONE_NUMBER_ID: document.getElementById('meta-phone').value,
+                META_WABA_ID: document.getElementById('meta-waba').value,
+                TEXTMEBOT_API_KEY: document.getElementById('textmebot-key').value,
+                ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value
+            };
+            await fetch('/api/env', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
+            showToast("Configuración Guardada");
         }
-
-        async function openFile(name) {
-            currentFile = name;
-            const res = await fetch(`/api/knowledge/${name}`);
-            const data = await res.json();
-            document.getElementById('editing-filename').innerText = "Editando: " + name;
-            document.getElementById('file-editor').value = data.content;
-            document.getElementById('file-editor-container').style.display = 'block';
-        }
-
-        async function saveFile() {
-            const res = await fetch(`/api/knowledge/${currentFile}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: document.getElementById('file-editor').value })
-            });
-            if(res.ok) { showToast(); document.getElementById('file-editor-container').style.display = 'none'; }
-        }
-
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        initWS();
+        async function testLink() { const res = await fetch('/api/test', {method:'POST'}); const d = await res.json(); showToast(d.message); }
+        async function loadKnowledge() { const res = await fetch('/api/knowledge'); const d = await res.json(); const grid = document.getElementById('knowledge-grid'); grid.innerHTML = ""; d.files.forEach(f => { const c = document.createElement('div'); c.style.padding="1.5rem"; c.style.background="rgba(255,255,255,0.03)"; c.style.borderRadius="20px"; c.style.cursor="pointer"; c.innerHTML=`📄 ${f}`; c.onclick=()=>openFile(f); grid.appendChild(c); }); }
+        async function openFile(n) { currentFile=n; const res=await fetch(`/api/knowledge/${n}`); const d=await res.json(); document.getElementById('editing-filename').innerText=n; document.getElementById('file-editor').value=d.content; document.getElementById('file-editor-container').classList.remove('hidden'); }
+        async function saveFile() { await fetch(`/api/knowledge/${currentFile}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content: document.getElementById('file-editor').value}) }); showToast("Guardado"); }
+        function createNewFile() { const n = prompt("Nombre:"); if(n) { currentFile=n; openFile(n); } }
+        async function loadConfig() { const res = await fetch('/api/config'); const d = await res.json(); document.getElementById('prompt-editor').value = JSON.stringify(d, null, 2); }
+        async function saveConfig() { await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: document.getElementById('prompt-editor').value }); showToast("Personalidad Guardada"); }
+        function initWS() { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/admin`); ws.onmessage = (e) => { const d = JSON.parse(e.data); if(d.type==='new_message') renderMsg(d); }; }
+        function renderMsg(d) { const b = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = `message msg-${d.author}`; div.innerHTML=`<strong>${d.phone}</strong><br>${d.text}`; b.appendChild(div); b.scrollTop = b.scrollHeight; currentPhone=d.phone; document.getElementById('chat-controls').style.display='flex'; }
+        async function sendManual() { const i = document.getElementById('manual-msg'); await fetch('/api/send', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({to:currentPhone, text:i.value})}); i.value=""; }
+        function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
+        initWS(); showSection('live');
     </script>
 </body>
 </html>

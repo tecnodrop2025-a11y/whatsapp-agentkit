@@ -1,0 +1,26 @@
+# INFORMACIÓN GENERAL — VENTAS EN SANTIAGO
+
+## Logística y Entregas (Reglas Importantes)
+*   **Si el cliente confirma ANTES de las 11:45 AM**, tiene dos opciones:
+    1.  🌙 **Horario PM (Mismo día)**: Se entrega hoy mismo entre las 17:00 y 22:00 horas.
+    2.  🌞 **Horario AM (Mañana)**: Se entrega el día de mañana entre las 10:00 y 17:00 horas.
+*   **Aclaración sobre Horario AM**: Para cumplir con la entrega temprana (10:00 - 17:00), el pedido debe salir de bodega el día anterior. Por eso, el cliente recibirá una notificación de "pedido despachado" un día antes; esto es normal y necesario para asegurar que llegue a tiempo en la mañana.
+*   **Si el cliente confirma DESPUÉS de las 11:45 AM**: El pedido queda programado automáticamente para el día hábil siguiente.
+*   **Días de Operación**: De lunes a sábado.
+*   **Cobertura**:
+    *   🚚 Todo Santiago urbano tiene **ENVÍO GRATIS**.
+    *   ❌ **Zonas Rurales (Con costo adicional y coordinación especial):** Talagante, El monte, Lampa, Peñaflor, Isla de Maipo.
+
+## Formas de Pago
+*   💰 **Pago Contra Entrega**: El cliente paga solamente cuando recibe el producto.
+*   📦 **Medios de Pago**: Efectivo o Transferencia electrónica al repartidor.
+*   ❌ No aceptamos tarjetas de débito/crédito físicas en el momento de la entrega por ahora.
+
+## Garantía y Soporte
+*   🛡️ **Garantía Total**: 60 días en todos los productos.
+*   ✅ **Verificación de Dirección**: Si detectamos algún error en los datos de Shopify, nos comunicaremos con el cliente de inmediato.
+*   📍 **Referencias**: Siempre solicitamos una referencia (color de casa, negocio cercano, entre qué calles está) para facilitar el trabajo del repartidor y asegurar que el pedido llegue a tiempo.
+
+## Sobre el Negocio
+*   Venta de productos para el hogar con enfoque en calidad y rapidez de entrega.
+*   La mayoría de nuestros clientes son personas entre 30 y 65+ años.

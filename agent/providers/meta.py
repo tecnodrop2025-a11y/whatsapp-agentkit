@@ -75,3 +75,36 @@ class ProveedorMeta(ProveedorWhatsApp):
             if r.status_code != 200:
                 logger.error(f"Error Meta API: {r.status_code} — {r.text}")
             return r.status_code == 200
+
+    async def enviar_imagen(self, telefono: str, url: str, leyenda: str = "") -> bool:
+        """Envía imagen (jpg, png, gif, webp) via Meta WhatsApp Cloud API."""
+        return await self._enviar_media(telefono, "image", {"link": url, "caption": leyenda})
+
+    async def enviar_video(self, telefono: str, url: str, leyenda: str = "") -> bool:
+        """Envía video (mp4, mov) via Meta WhatsApp Cloud API."""
+        return await self._enviar_media(telefono, "video", {"link": url, "caption": leyenda})
+
+    async def enviar_documento(self, telefono: str, url: str, nombre: str = "archivo") -> bool:
+        """Envía documento (pdf, docx, xlsx) via Meta WhatsApp Cloud API."""
+        return await self._enviar_media(telefono, "document", {"link": url, "filename": nombre})
+
+    async def enviar_audio(self, telefono: str, url: str) -> bool:
+        """Envía audio (mp3, ogg) via Meta WhatsApp Cloud API."""
+        return await self._enviar_media(telefono, "audio", {"link": url})
+
+    async def _enviar_media(self, telefono: str, tipo: str, payload_media: dict) -> bool:
+        """Método interno genérico para enviar cualquier tipo de media."""
+        if not self.access_token or not self.phone_number_id: return False
+        api_url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
+        headers = {"Authorization": f"Bearer {self.access_token}", "Content-Type": "application/json"}
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": telefono,
+            "type": tipo,
+            tipo: payload_media
+        }
+        async with httpx.AsyncClient() as client:
+            r = await client.post(api_url, json=payload, headers=headers)
+            if r.status_code != 200:
+                logger.error(f"Error Meta media ({tipo}): {r.status_code} — {r.text}")
+            return r.status_code == 200

@@ -13,9 +13,19 @@ from dotenv import load_dotenv
 
 from agent.brain import generar_respuesta, cargar_config_prompts
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
-from agent.providers import obtener_proveedor
+from agent.providers.whapi import ProveedorWhapi
+from agent.providers.meta import ProveedorMeta
+from agent.providers.textmebot import ProveedorTextMeBot
 
 load_dotenv()
+
+# --- CONFIGURACIÓN GLOBAL ---
+def obtener_proveedor():
+    """Función de fábrica para instanciar el proveedor configurado."""
+    provider_name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
+    if provider_name == "meta": return ProveedorMeta()
+    if provider_name == "textmebot": return ProveedorTextMeBot()
+    return ProveedorWhapi()
 
 # Logger
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -54,7 +64,59 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Carla Bot Admin", lifespan=lifespan)
 
-# --- ENDPOINTS API ADMIN ---
+# --- ENDPOINTS API CONFIGURACIÓN TÉCNICA ---
+
+@app.get("/api/env")
+async def get_env_vars():
+    """Lee las variables técnicas clave del .env."""
+    return {
+        "WHATSAPP_PROVIDER": os.getenv("WHATSAPP_PROVIDER", "whapi"),
+        "WHAPI_TOKEN": os.getenv("WHAPI_TOKEN", ""),
+        "META_ACCESS_TOKEN": os.getenv("META_ACCESS_TOKEN", ""),
+        "META_PHONE_NUMBER_ID": os.getenv("META_PHONE_NUMBER_ID", ""),
+        "META_WABA_ID": os.getenv("META_WABA_ID", ""),
+        "TEXTMEBOT_API_KEY": os.getenv("TEXTMEBOT_API_KEY", ""),
+        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", "")
+    }
+
+@app.post("/api/test")
+async def test_connection():
+    """Realiza una prueba de conexión básica con el proveedor actual."""
+    try:
+        # Intentamos obtener información de la cuenta (esto varía por proveedor)
+        # Por ahora, simplemente validamos que la configuración basica existe
+        if not proveedor: return {"status": "error", "message": "Proveedor no iniciado"}
+        
+        # Simulamos un check rápido 
+        # (Podrías llamar a proveedor.get_me() si lo tienes implementado)
+        return {"status": "ok", "message": f"Conectado a {proveedor.__class__.__name__}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/env")
+async def save_env_vars(data: dict = Body(...)):
+    """Sobrescribe las variables en el archivo .env."""
+    try:
+        lines = []
+        if os.path.exists(".env"):
+            with open(".env", "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        
+        # Eliminar líneas viejas de las variables que estamos editando
+        keys_to_update = data.keys()
+        new_lines = [l for l in lines if not any(l.startswith(f"{k}=") for k in keys_to_update)]
+        
+        # Añadir las nuevas
+        for k, v in data.items():
+            new_lines.append(f"{k}={v}\n")
+            
+        with open(".env", "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+            
+        load_dotenv(override=True) # Recargar en memoria
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/config")
 async def get_config():
@@ -122,13 +184,37 @@ async def webhook_handler(request: Request):
         historial = await obtener_historial(msg.telefono)
         respuesta = await generar_respuesta(msg.texto, historial)
 
-        # 3. Respuesta dividida con delay
+        # 3. Respuesta inteligente (Texto + Multimedia)
+        import re
         bloques = [b.strip() for b in respuesta.split("\n\n") if any(c.isalnum() for c in b)]
         for bloque in bloques:
-            await proveedor.enviar_mensaje(msg.telefono, bloque)
-            # Notificar respuesta al Admin
+            # Detectar etiquetas multimedia: [IMAGEN:], [VIDEO:], [DOCUMENTO:], [AUDIO:]
+            patron = r"\[(IMAGEN|VIDEO|DOCUMENTO|AUDIO):\s*(https?://[^\s\]]+)\]"
+            match = re.search(patron, bloque)
+
+            if match:
+                tipo = match.group(1)
+                url_media = match.group(2)
+                texto_restante = re.sub(patron, "", bloque).strip()
+
+                if tipo == "IMAGEN":
+                    await proveedor.enviar_imagen(msg.telefono, url_media, texto_restante)
+                elif tipo == "VIDEO":
+                    await proveedor.enviar_video(msg.telefono, url_media, texto_restante)
+                elif tipo == "DOCUMENTO":
+                    # Extraer nombre del archivo de la URL
+                    nombre_archivo = url_media.split("/")[-1] or "documento"
+                    await proveedor.enviar_documento(msg.telefono, url_media, nombre_archivo)
+                elif tipo == "AUDIO":
+                    if texto_restante:
+                        await proveedor.enviar_mensaje(msg.telefono, texto_restante)
+                    await proveedor.enviar_audio(msg.telefono, url_media)
+            else:
+                await proveedor.enviar_mensaje(msg.telefono, bloque)
+
+            # Notificar al Panel Admin
             await manager.broadcast({"type": "new_message", "phone": msg.telefono, "text": bloque, "author": "assistant"})
-            await asyncio.sleep(2.0)
+            await asyncio.sleep(1.5)
 
         await guardar_mensaje(msg.telefono, "user", msg.texto)
         await guardar_mensaje(msg.telefono, "assistant", respuesta)

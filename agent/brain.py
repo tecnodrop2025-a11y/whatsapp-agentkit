@@ -1,127 +1,70 @@
-# agent/brain.py — Cerebro del agente: conexión con Claude API
-# Generado por AgentKit
-
-"""
-Lógica de IA del agente. Lee el system prompt de prompts.yaml
-y genera respuestas usando la API de Anthropic Claude.
-"""
-
+# agent/brain.py — Cerebro Optimizado
 import os
 import yaml
 import logging
+import pytz
+import anthropic
+from datetime import datetime
 from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger("agentkit")
 
-# Cliente de Anthropic
-client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+def cargar_config_prompts():
+    with open("config/prompts.yaml", "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
-
-def cargar_config_prompts() -> dict:
-    """Lee toda la configuración desde config/prompts.yaml."""
-    try:
-        with open("config/prompts.yaml", "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except FileNotFoundError:
-        logger.error("config/prompts.yaml no encontrado")
-        return {}
-
-
-def cargar_conocimiento() -> str:
-    """Lee todos los archivos .txt en la carpeta /knowledge."""
-    conocimiento = "\n\n--- CONOCIMIENTO ADICIONAL ---\n"
+def obtener_conocimiento():
     folder = "knowledge"
-    if not os.path.exists(folder):
-        return ""
-    
-    for filename in os.listdir(folder):
-        if filename.endswith(".txt"):
-            try:
-                with open(os.path.join(folder, filename), "r", encoding="utf-8") as f:
-                    contenido = f.read()
-                    conocimiento += f"\nArchivo: {filename}\n{contenido}\n"
-            except Exception as e:
-                logger.error(f"Error leyendo {filename}: {e}")
-    return conocimiento
+    knowledge = ""
+    extensiones = (".txt", ".md", ".yaml", ".yml", ".json", ".csv")
+    if os.path.exists(folder):
+        for f in sorted(os.listdir(folder)):
+            if f.endswith(extensiones):
+                try:
+                    with open(os.path.join(folder, f), "r", encoding="utf-8") as content:
+                        knowledge += f"\n--- {f.upper()} ---\n{content.read()}\n"
+                except Exception as e:
+                    logger.warning(f"No se pudo leer {f}: {e}")
+                    continue
+    return knowledge
 
-
-def cargar_system_prompt() -> str:
-    """Lee el system prompt, añade conocimiento y la FECHA/HORA actual."""
-    from datetime import datetime
-    import pytz
-    
-    # Configurar zona horaria de Santiago de Chile
-    tz = pytz.timezone('America/Santiago')
-    ahora = datetime.now(tz)
-    fecha_hora_str = ahora.strftime("%A, %d de %B de %Y, %H:%M")
-    
+async def generar_respuesta(prompt_usuario, historial):
     config = cargar_config_prompts()
-    prompt_base = config.get("system_prompt", "Eres un asistente útil.")
-    conocimiento = cargar_conocimiento()
+    system_prompt = config.get("system_prompt", "")
     
-    # Inyectar contexto temporal al inicio
-    contexto_temporal = f"\n[CONTEXTO TEMPORAL]: Hoy es {fecha_hora_str} en Santiago de Chile.\n"
+    # Reloj y Conocimiento
+    santiago_tz = pytz.timezone("America/Santiago")
+    hora_actual = datetime.now(santiago_tz).strftime("%A %d de %B, %Y a las %H:%M")
+    system_prompt = f"HORA ACTUAL: {hora_actual}\n\n{system_prompt}\n\nCONOCIMIENTO:\n{obtener_conocimiento()}"
+
+    # Usar la llave del .env
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    client = AsyncAnthropic(api_key=api_key)
     
-    return f"{contexto_temporal}\n{prompt_base}\n{conocimiento}"
-
-
-def obtener_mensaje_error() -> str:
-    """Retorna el mensaje de error configurado en prompts.yaml."""
-    config = cargar_config_prompts()
-    return config.get("error_message", "Lo siento, estoy teniendo problemas técnicos. Por favor intenta de nuevo en unos minutos.")
-
-
-def obtener_mensaje_fallback() -> str:
-    """Retorna el mensaje de fallback configurado en prompts.yaml."""
-    config = cargar_config_prompts()
-    return config.get("fallback_message", "Disculpa, no entendí tu mensaje. ¿Podrías reformularlo?")
-
-
-async def generar_respuesta(mensaje: str, historial: list[dict]) -> str:
-    """
-    Genera una respuesta usando Claude API.
-
-    Args:
-        mensaje: El mensaje nuevo del usuario
-        historial: Lista de mensajes anteriores [{"role": "user/assistant", "content": "..."}]
-
-    Returns:
-        La respuesta generada por Claude
-    """
-    # Si el mensaje es muy corto o vacío, usar fallback
-    if not mensaje or len(mensaje.strip()) < 2:
-        return obtener_mensaje_fallback()
-
-    system_prompt = cargar_system_prompt()
-
-    # Construir mensajes para la API
-    mensajes_api = []
-    for msg in historial:
-        mensajes_api.append({
-            "role": msg["role"],
-            "content": msg["content"]
-        })
-
-    # Agregar el mensaje actual
-    mensajes_api.append({
-        "role": "user",
-        "content": mensaje
-    })
-
+    messages = [{"role": h["role"], "content": h["content"]} for h in historial]
+    messages.append({"role": "user", "content": prompt_usuario})
+    
     try:
+        # Petición a la IA (claude-sonnet-4-6 — modelo activo en esta cuenta)
         response = await client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=1024,
             system=system_prompt,
-            messages=mensajes_api
+            messages=messages
         )
-
-        respuesta = response.content[0].text
-        logger.info(f"Respuesta generada ({response.usage.input_tokens} in / {response.usage.output_tokens} out)")
-        return respuesta
-
+        return response.content[0].text
     except Exception as e:
-        logger.error(f"Error Claude API: {e}")
-        return obtener_mensaje_error()
+        logger.error(f"Error Crítico Cerebro: {e}")
+        # Si falla el modelo 3, intentamos un último recurso con Claude 2
+        try:
+            response = await client.messages.create(
+                model="claude-2.1",
+                max_tokens=1024,
+                system=system_prompt,
+                messages=messages
+            )
+            return response.content[0].text
+        except:
+            return "Lo siento, tengo un problema de conexión con mi cerebro. ¿Podrías intentar de nuevo en un momento?"

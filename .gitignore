@@ -1,28 +1,41 @@
-# Secretos — NUNCA subir
-.env
-
-# Base de datos local
-*.db
-*.sqlite
-*.sqlite3
-
 # Python
 __pycache__/
 *.py[cod]
-.venv/
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Entorno virtual
 venv/
+env/
+.venv/
+ENV/
 
-# Knowledge (archivos privados del negocio)
-knowledge/*
-!knowledge/.gitkeep
+# Variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
 
-# Session state
-config/session.yaml
+# Base de datos local
+*.db
+*.sqlite3
+agentkit.db
+
+# Uvicorn / FastAPI
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
+# Archivos temporales del proyecto
+tmp/
