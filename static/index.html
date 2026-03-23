@@ -120,7 +120,17 @@
         .msg-assistant { align-self: flex-end; background: var(--primary); }
         #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--success); color: white; padding: 0.8rem 2rem; border-radius: 50px; transition: 0.5s; z-index: 5000; }
         #toast.show { transform: translateX(-50%) translateY(0); }
-        .hidden { display: none; }
+        /* TABS MODAL PRODUCTO */
+        .tab-nav { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
+        .tab-btn { background: none; border: none; color: var(--text-dim); padding: 0.6rem 1.2rem; cursor: pointer; font-weight: 600; border-radius: 12px; transition: 0.3s; font-size: 0.9rem; }
+        .tab-btn.active { background: rgba(129,140,248,0.15); color: #818cf8; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        input:read-only, textarea:read-only { background: rgba(255,255,255,0.02); color: var(--text-dim); cursor: not-allowed; border-color: transparent; }
+
+        .hidden { display: none !important; }
         .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; transition: all 0.4s; }
         .status-badge.idle { background: rgba(255,255,255,0.07); color: var(--text-dim); }
         .status-badge.testing { background: rgba(250,204,21,0.15); color: #fbbf24; }
@@ -250,26 +260,58 @@
                         <!-- Los productos se cargan aquí -->
                     </div>
                     
-                    <!-- Formulario de Edición de Ficha -->
-                    <div id="product-form-container" class="hidden" style="margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.1);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h3 id="product-form-title">Editar Producto</h3>
-                            <button class="btn" style="background:rgba(239,68,68,0.1); color:var(--danger);" onclick="deleteProduct()"><i class="fa-solid fa-trash"></i> Eliminar</button>
-                        </div>
-                        <div class="section-box">
-                            <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text" id="prod-name" placeholder="Ej: Parches AlivioNatural de 60u"></div>
-                            <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave / Alias (Separados por coma)</label><input type="text" id="prod-keys" placeholder="Ej: 60u, grande, un mes, parches rojos"></div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
-                                <div class="form-group"><label><i class="fa-solid fa-tag"></i> Precio</label><input type="text" id="prod-price" placeholder="0"></div>
-                                <div class="form-group"><label><i class="fa-solid fa-boxes-stacked"></i> Stock</label><input type="number" id="prod-stock" placeholder="0"></div>
+                    <!-- NEW PRODUCT MODAL WITH TABS -->
+                    <div id="product-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:2000; overflow-y:auto; padding:2rem;">
+                        <div style="max-width:800px; margin:0 auto; background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:32px; padding:2.5rem; position:relative; box-shadow:0 30px 60px -12px rgba(0,0,0,0.5);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                                <div>
+                                    <h2 id="product-form-title" style="margin:0; font-size:1.6rem; color:white;">Detalle del Producto</h2>
+                                    <p style="margin:0.2rem 0 0; color:var(--text-dim); font-size:0.9rem;">Gestiona la información y archivos del bot</p>
+                                </div>
+                                <div style="display:flex; gap:0.8rem; align-items:center;">
+                                    <button id="btn-delete-product" class="btn" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.2);" onclick="deleteProduct()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                                    <button onclick="closeProductModal()" style="background:rgba(255,255,255,0.05); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer;">✕</button>
+                                </div>
                             </div>
-                            <div class="form-group"><label><i class="fa-solid fa-align-left"></i> Descripción del Producto</label><textarea id="prod-desc" style="min-height:100px; font-family:inherit; font-size:0.9rem;" placeholder="Detalles del producto..."></textarea></div>
-                            <div class="form-group"><label><i class="fa-solid fa-image"></i> Link de Imagen (jpg, png)</label><input type="text" id="prod-img" placeholder="https://..."></div>
-                            <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
-                            <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Documento (pdf)</label><input type="text" id="prod-doc" placeholder="https://..."></div>
-                            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-                                <button class="btn btn-success" id="btn-save-product" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Guardar Ficha</button>
-                                <button class="btn" onclick="document.getElementById('product-form-container').classList.add('hidden')" style="background:rgba(255,255,255,0.05);">Cancelar</button>
+
+                            <!-- Tabs Nav -->
+                            <div class="tab-nav">
+                                <button class="tab-btn active" onclick="switchTab('tab-info')"><i class="fa-solid fa-circle-info"></i> Información Comercial</button>
+                                <button class="tab-btn" onclick="switchTab('tab-multimedia')"><i class="fa-solid fa-photo-film"></i> Envíos Multimedia</button>
+                            </div>
+
+                            <!-- Tab 1: Info -->
+                            <div id="tab-info" class="tab-content active">
+                                <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text" id="prod-name" placeholder="Ej: Parches AlivioNatural"></div>
+                                <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave / Alias</label><input type="text" id="prod-keys" placeholder="Separa con comas..."></div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
+                                    <div class="form-group"><label><i class="fa-solid fa-tag"></i> Precio</label><input type="text" id="prod-price" placeholder="0"></div>
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-boxes-stacked"></i> Stock Disponible</label>
+                                        <input type="number" id="prod-stock" placeholder="0">
+                                        <small id="stock-hint" style="font-size:0.7rem; color:#95d376; display:none; margin-top:0.3rem;">Sincronizado vía Shopify</small>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label><i class="fa-solid fa-align-left"></i> Descripción de Venta</label><textarea id="prod-desc" style="min-height:150px; font-family:inherit; font-size:0.9rem;" placeholder="Escribe los beneficios o detalles del producto..."></textarea></div>
+                            </div>
+
+                            <!-- Tab 2: Multimedia -->
+                            <div id="tab-multimedia" class="tab-content">
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-image"></i> Link de Imagen de Portada</label>
+                                    <input type="text" id="prod-img" placeholder="https://..." oninput="updatePreviewImg()">
+                                    <div style="margin-top:1rem; width:100px; height:100px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
+                                        <img id="modal-img-preview" style="max-width:100%; max-height:100%; display:none;">
+                                        <i id="modal-img-icon" class="fa-solid fa-image fa-2x" style="color:var(--text-dim)"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video Demo (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
+                                <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Ficha PDF / Catálogo</label><input type="text" id="prod-doc" placeholder="https://..."></div>
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2.5rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.05);">
+                                <button class="btn" onclick="closeProductModal()" style="background:rgba(255,255,255,0.05);">Cerrar</button>
+                                <button class="btn btn-success" id="btn-save-product" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Aplicar Cambios</button>
                             </div>
                         </div>
                     </div>
@@ -620,7 +662,10 @@
             });
         }
         function openProductForm(name = "") {
-            document.getElementById('product-form-container').classList.remove('hidden');
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            switchTab('tab-info');
+            
             const p = name ? fullCatalog[name] : { keywords: "", imagen: "", video: "", documento: "", descripcion: "", precio: "", stock: 0 };
             document.getElementById('prod-name').value = name;
             document.getElementById('prod-keys').value = p.keywords || "";
@@ -630,9 +675,45 @@
             document.getElementById('prod-desc').value = p.descripcion || "";
             document.getElementById('prod-price').value = p.precio || "";
             document.getElementById('prod-stock').value = p.stock || 0;
+            
+            // Lógica de Stock Bloqueado
+            const stockInput = document.getElementById('prod-stock');
+            const stockHint = document.getElementById('stock-hint');
+            const isSyncEnabled = document.getElementById('shopify-import-stock').checked;
+            
+            if (isSyncEnabled && p.shopify_id) {
+                stockInput.readOnly = true;
+                stockHint.style.display = 'block';
+            } else {
+                stockInput.readOnly = false;
+                stockHint.style.display = 'none';
+            }
+
             document.getElementById('product-form-title').innerText = name ? "Editar Ficha Técnica" : "Nueva Ficha de Producto";
+            document.getElementById('btn-delete-product').style.display = name ? 'flex' : 'none';
+            
+            updatePreviewImg();
             currentProductSelected = name;
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+        function updatePreviewImg() {
+            const url = document.getElementById('prod-img').value;
+            const img = document.getElementById('modal-img-preview');
+            const icon = document.getElementById('modal-img-icon');
+            if(url) {
+                img.src = url; img.style.display = 'block'; icon.style.display = 'none';
+            } else {
+                img.style.display = 'none'; icon.style.display = 'block';
+            }
         }
         async function saveProduct() {
             const name = document.getElementById('prod-name').value;
@@ -640,9 +721,7 @@
             const btn = document.getElementById('btn-save-product');
             btn.disabled = true;
 
-            // Mantener el shopify_id si existe
             const oldData = fullCatalog[name] || {};
-
             fullCatalog[name] = {
                 ...oldData,
                 keywords: document.getElementById('prod-keys').value,
@@ -656,7 +735,7 @@
             await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
             showToast("Producto Guardado");
             loadCatalog();
-            document.getElementById('product-form-container').classList.add('hidden');
+            closeProductModal();
             btn.disabled = false;
         }
         async function deleteProduct() {
@@ -664,7 +743,7 @@
             delete fullCatalog[currentProductSelected];
             await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
             loadCatalog();
-            document.getElementById('product-form-container').classList.add('hidden');
+            closeProductModal();
         }
 
         function initWS() { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/admin`); ws.onmessage = (e) => { const d = JSON.parse(e.data); if(d.type==='new_message') renderMsg(d); }; }
