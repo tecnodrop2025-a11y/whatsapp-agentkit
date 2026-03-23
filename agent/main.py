@@ -9,13 +9,14 @@ from typing import List
 from fastapi import FastAPI, Request, HTTPException, Body, WebSocket, WebSocketDisconnect
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 
 from agent.brain import generar_respuesta, cargar_config_prompts
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers.whapi import ProveedorWhapi
 from agent.providers.meta import ProveedorMeta
 from agent.providers.textmebot import ProveedorTextMeBot
+from agent.shopify_client import ShopifyClient
 
 load_dotenv()
 
@@ -93,6 +94,33 @@ async def test_connection():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.post("/api/test/claude")
+async def test_claude():
+    """Prueba la conexión real con la API de Anthropic Claude."""
+    import time
+    from anthropic import AsyncAnthropic
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {"status": "error", "message": "ANTHROPIC_API_KEY no configurada"}
+    try:
+        client = AsyncAnthropic(api_key=api_key)
+        t0 = time.time()
+        response = await client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=10,
+            messages=[{"role": "user", "content": "di solo: ok"}]
+        )
+        ms = round((time.time() - t0) * 1000)
+        modelo = response.model
+        return {"status": "ok", "message": f"✅ Conectado · {modelo} · {ms}ms"}
+    except Exception as e:
+        msg = str(e)
+        if "401" in msg or "invalid" in msg.lower():
+            return {"status": "error", "message": "❌ API Key inválida o sin acceso"}
+        if "404" in msg:
+            return {"status": "error", "message": "❌ Modelo no encontrado para esta cuenta"}
+        return {"status": "error", "message": f"❌ {msg[:120]}"}
+
 @app.post("/api/env")
 async def save_env_vars(data: dict = Body(...)):
     """Sobrescribe las variables en el archivo .env."""
@@ -143,6 +171,126 @@ async def save_knowledge_file(filename: str, data: dict = Body(...)):
     with open(os.path.join("knowledge", filename), "w", encoding="utf-8") as f:
         f.write(data.get("content", ""))
     return {"status": "ok"}
+
+@app.get("/api/catalog")
+async def get_catalog():
+    """Retorna el catálogo multimedia de productos."""
+    file_path = "knowledge/catalog.json"
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+@app.post("/api/catalog")
+async def save_catalog(data: dict = Body(...)):
+    """Guarda el catálogo multimedia completo."""
+    with open("knowledge/catalog.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    return {"status": "ok"}
+
+# --- SHOPIFY OAUTH ---
+
+@app.get("/shopify/install")
+async def shopify_install(request: Request):
+    """Inicia el flujo OAuth de Shopify. Redirige al usuario a Shopify para autorizar."""
+    from fastapi.responses import RedirectResponse
+    shop = os.getenv("SHOPIFY_STORE_URL", "").strip()
+    client_id = os.getenv("SHOPIFY_CLIENT_ID", "").strip()
+    # URL base donde está desplegada esta app (Railway u otro)
+    app_url = os.getenv("APP_URL", str(request.base_url).rstrip("/"))
+    redirect_uri = f"{app_url}/shopify/callback"
+    scopes = "read_products,read_inventory"
+    auth_url = (
+        f"https://{shop}/admin/oauth/authorize"
+        f"?client_id={client_id}"
+        f"&scope={scopes}"
+        f"&redirect_uri={redirect_uri}"
+    )
+    return RedirectResponse(url=auth_url)
+
+@app.get("/shopify/callback")
+async def shopify_callback(request: Request):
+    """Recibe el código OAuth de Shopify, lo intercambia por un token permanente y lo guarda."""
+    import httpx as _httpx
+    code = request.query_params.get("code")
+    shop = request.query_params.get("shop", os.getenv("SHOPIFY_STORE_URL", ""))
+    if not code:
+        return HTMLResponse("<h2>❌ Error: No se recibió el código de autorización de Shopify.</h2>")
+    client_id = os.getenv("SHOPIFY_CLIENT_ID", "")
+    client_secret = os.getenv("SHOPIFY_CLIENT_SECRET", "")
+    try:
+        async with _httpx.AsyncClient(timeout=15) as client:
+            r = await client.post(
+                f"https://{shop}/admin/oauth/access_token",
+                json={"client_id": client_id, "client_secret": client_secret, "code": code}
+            )
+            data = r.json()
+            access_token = data.get("access_token", "")
+            if not access_token:
+                return HTMLResponse(f"<h2>❌ Error al obtener token: {data}</h2>")
+            # Guardar token en .env automáticamente
+            env_path = os.path.join(os.getcwd(), ".env")
+            set_key(env_path, "SHOPIFY_ACCESS_TOKEN", access_token)
+            set_key(env_path, "SHOPIFY_STORE_URL", shop)
+            os.environ["SHOPIFY_ACCESS_TOKEN"] = access_token
+            os.environ["SHOPIFY_STORE_URL"] = shop
+            logger.info(f"✅ Shopify token guardado correctamente para {shop}")
+            return HTMLResponse(f"""
+                <html><body style="font-family:sans-serif; padding:3rem; background:#0f172a; color:white; text-align:center;">
+                <h1 style="color:#10b981">✅ ¡Shopify conectado!</h1>
+                <p>Token guardado para: <strong>{shop}</strong></p>
+                <p style="color:#94a3b8">Puedes cerrar esta ventana y volver al panel de Carla.</p>
+                </body></html>
+            """)
+    except Exception as e:
+        return HTMLResponse(f"<h2>❌ Error: {e}</h2>")
+
+@app.post("/api/shopify/test")
+async def test_shopify():
+    """Prueba la conexión con la tienda Shopify."""
+    import time
+    t0 = time.time()
+    client = ShopifyClient()
+    result = await client.test_connection()
+    ms = round((time.time() - t0) * 1000)
+    if result["ok"]:
+        return {"status": "ok", "message": f"✅ Conectado · {result.get('shop_name', '')} · {ms}ms"}
+    return {"status": "error", "message": f"❌ {result.get('error', 'Error desconocido')}"}
+
+@app.post("/api/shopify/import")
+async def import_shopify_products():
+    """Importa productos desde Shopify y los fusiona con el catálogo local."""
+    client = ShopifyClient()
+    if not client.is_configured():
+        return {"status": "error", "message": "Shopify no está configurado"}
+    try:
+        productos = await client.get_products()
+        if not productos:
+            return {"status": "error", "message": "No se encontraron productos o error de conexión"}
+
+        nuevos = client.format_for_catalog(productos)
+
+        # Fusionar con catálogo existente (preservar video y documento que ya tengas)
+        catalog_file = "knowledge/catalog.json"
+        existente = {}
+        if os.path.exists(catalog_file):
+            with open(catalog_file, "r", encoding="utf-8") as f:
+                existente = json.load(f)
+
+        for nombre, datos in nuevos.items():
+            if nombre in existente:
+                # Preservar campos que el usuario editó manualmente
+                datos["video"] = existente[nombre].get("video", "")
+                datos["documento"] = existente[nombre].get("documento", "")
+                datos["keywords"] = existente[nombre].get("keywords", datos["keywords"])
+            existente[nombre] = datos
+
+        with open(catalog_file, "w", encoding="utf-8") as f:
+            json.dump(existente, f, indent=2, ensure_ascii=False)
+
+        return {"status": "ok", "message": f"✅ {len(nuevos)} productos importados desde Shopify", "count": len(nuevos)}
+    except Exception as e:
+        return {"status": "error", "message": f"❌ {str(e)[:200]}"}
 
 @app.post("/api/send")
 async def send_manual_message(data: dict = Body(...)):

@@ -39,6 +39,14 @@
         #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--success); color: white; padding: 0.8rem 2rem; border-radius: 50px; transition: 0.5s; z-index: 5000; }
         #toast.show { transform: translateX(-50%) translateY(0); }
         .hidden { display: none; }
+        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; transition: all 0.4s; }
+        .status-badge.idle { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+        .status-badge.testing { background: rgba(250,204,21,0.15); color: #fbbf24; }
+        .status-badge.connected { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-badge.error { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .status-badge.connected .status-dot { animation: pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
     </style>
 </head>
 <body>
@@ -53,6 +61,7 @@
                 <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i class="fa-solid fa-plug"></i> Conexión WhatsApp</div>
                 <div class="nav-item" id="nav-personality" onclick="showSection('personality')"><i class="fa-solid fa-brain"></i> Personalidad</div>
                 <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')"><i class="fa-solid fa-database"></i> Conocimiento</div>
+                <div class="nav-item" id="nav-catalog" onclick="showSection('catalog')"><i class="fa-solid fa-box-open"></i> Catálogo Multimedia</div>
             </div>
             <main class="main-card">
                 <div id="sec-connection" style="display: none;">
@@ -75,7 +84,16 @@
                         </div>
                         <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
                     </div>
-                    <div class="section-box"><h3 style="margin-bottom:1.2rem; font-size:1rem;"><i class="fa-solid fa-brain"></i> Cerebro Claude</h3><div class="form-group"><label>Claude API Key</label><input type="text" id="anthropic-key"></div></div>
+                    <div class="section-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-solid fa-brain"></i> Cerebro Claude</h3>
+                            <span id="claude-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
+                        </div>
+                        <div class="form-group"><label>Claude API Key</label><input type="text" id="anthropic-key" placeholder="sk-ant-api03-..."></div>
+                        <button class="btn" id="btn-test-claude" onclick="testClaude()" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">
+                            <i class="fa-solid fa-satellite-dish"></i> Probar Conexión
+                        </button>
+                    </div>
                     <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Guardar Todo</button>
                     <button class="btn btn-success" onclick="testLink()" style="margin-left:1rem;"><i class="fa-solid fa-vial"></i> Test</button>
                 </div>
@@ -88,6 +106,44 @@
                 </div>
                 <div id="sec-personality" style="display: none;"><h2>Prompts Maestros</h2><textarea id="prompt-editor" spellcheck="false"></textarea><button class="btn btn-primary" onclick="saveConfig()" style="margin-top:1rem;">Aplicar Cambios</button></div>
                 <div id="sec-knowledge" style="display: none;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;"><h2>Biblioteca</h2><button class="btn btn-primary" style="background:transparent; border:1px solid var(--primary);" onclick="createNewFile()">+ Nuevo</button></div><div id="knowledge-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1.2rem;"></div><div id="file-editor-container" class="hidden" style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:2rem;"><h3 id="editing-filename">Archivo</h3><textarea id="file-editor"></textarea><button class="btn btn-primary" onclick="saveFile()" style="margin-top:1rem;">Guardar Cambios</button></div></div>
+                <!-- SECCIÓN CATÁLOGO MULTIMEDIA -->
+                <div id="sec-catalog" style="display: none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                        <h2><i class="fa-solid fa-box-open"></i> Catálogo Multimedia</h2>
+                        <div style="display:flex; align-items:center; gap:0.8rem;">
+                            <span id="shopify-status" class="status-badge idle"><span class="status-dot"></span> Shopify</span>
+                            <button id="btn-shopify-test" class="btn" onclick="testShopify()" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
+                                <i class="fa-solid fa-plug"></i> Probar
+                            </button>
+                            <button id="btn-shopify-import" class="btn" onclick="importFromShopify()" style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> Importar Productos
+                            </button>
+                            <button class="btn btn-primary" onclick="openProductForm()" style="padding:0.5rem 1rem; font-size:0.8rem;">+ Nuevo</button>
+                        </div>
+                    </div>
+                    <div id="catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem;">
+                        <!-- Los productos se cargan aquí -->
+                    </div>
+                    
+                    <!-- Formulario de Edición de Ficha -->
+                    <div id="product-form-container" class="hidden" style="margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.1);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h3 id="product-form-title">Editar Producto</h3>
+                            <button class="btn" style="background:rgba(239,68,68,0.1); color:var(--danger);" onclick="deleteProduct()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                        </div>
+                        <div class="section-box">
+                            <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text" id="prod-name" placeholder="Ej: Parches AlivioNatural de 60u"></div>
+                            <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave / Alias (Separados por coma)</label><input type="text" id="prod-keys" placeholder="Ej: 60u, grande, un mes, parches rojos"></div>
+                            <div class="form-group"><label><i class="fa-solid fa-image"></i> Link de Imagen (jpg, png)</label><input type="text" id="prod-img" placeholder="https://..."></div>
+                            <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
+                            <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Documento (pdf)</label><input type="text" id="prod-doc" placeholder="https://..."></div>
+                            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                                <button class="btn btn-success" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Guardar Ficha</button>
+                                <button class="btn" onclick="document.getElementById('product-form-container').classList.add('hidden')" style="background:rgba(255,255,255,0.05);">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -97,10 +153,11 @@
         function showSection(name) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById('nav-' + name).classList.add('active');
-            ['live', 'connection', 'personality', 'knowledge'].forEach(s => document.getElementById('sec-' + s).style.display = (s === name ? 'block' : 'none'));
+            ['live', 'connection', 'personality', 'knowledge', 'catalog'].forEach(s => document.getElementById('sec-' + s).style.display = (s === name ? 'block' : 'none'));
             if(name === 'connection') loadEnv();
             if(name === 'knowledge') loadKnowledge();
             if(name === 'personality') loadConfig();
+            if(name === 'catalog') loadCatalog();
         }
         function toggleProvFields() {
             const p = document.getElementById('prov-selector').value;
@@ -133,12 +190,133 @@
             showToast("Configuración Guardada");
         }
         async function testLink() { const res = await fetch('/api/test', {method:'POST'}); const d = await res.json(); showToast(d.message); }
+        async function testClaude() {
+            const badge = document.getElementById('claude-status');
+            const btn = document.getElementById('btn-test-claude');
+            badge.className = 'status-badge testing';
+            badge.innerHTML = '<span class="status-dot"></span> Probando...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/test/claude', {method: 'POST'});
+                const d = await res.json();
+                if (d.status === 'ok') {
+                    badge.className = 'status-badge connected';
+                    badge.innerHTML = '<span class="status-dot"></span> Conectado';
+                    showToast(d.message);
+                } else {
+                    badge.className = 'status-badge error';
+                    badge.innerHTML = '<span class="status-dot"></span> Error';
+                    showToast(d.message);
+                }
+            } catch(e) {
+                badge.className = 'status-badge error';
+                badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
+            }
+            btn.disabled = false;
+        }
         async function loadKnowledge() { const res = await fetch('/api/knowledge'); const d = await res.json(); const grid = document.getElementById('knowledge-grid'); grid.innerHTML = ""; d.files.forEach(f => { const c = document.createElement('div'); c.style.padding="1.5rem"; c.style.background="rgba(255,255,255,0.03)"; c.style.borderRadius="20px"; c.style.cursor="pointer"; c.innerHTML=`📄 ${f}`; c.onclick=()=>openFile(f); grid.appendChild(c); }); }
         async function openFile(n) { currentFile=n; const res=await fetch(`/api/knowledge/${n}`); const d=await res.json(); document.getElementById('editing-filename').innerText=n; document.getElementById('file-editor').value=d.content; document.getElementById('file-editor-container').classList.remove('hidden'); }
         async function saveFile() { await fetch(`/api/knowledge/${currentFile}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content: document.getElementById('file-editor').value}) }); showToast("Guardado"); }
         function createNewFile() { const n = prompt("Nombre:"); if(n) { currentFile=n; openFile(n); } }
         async function loadConfig() { const res = await fetch('/api/config'); const d = await res.json(); document.getElementById('prompt-editor').value = JSON.stringify(d, null, 2); }
         async function saveConfig() { await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: document.getElementById('prompt-editor').value }); showToast("Personalidad Guardada"); }
+        
+        // --- SHOPIFY ---
+        async function testShopify() {
+            const badge = document.getElementById('shopify-status');
+            const btn = document.getElementById('btn-shopify-test');
+            badge.className = 'status-badge testing';
+            badge.innerHTML = '<span class="status-dot"></span> Probando...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/shopify/test', {method:'POST'});
+                const d = await res.json();
+                if (d.status === 'ok') {
+                    badge.className = 'status-badge connected';
+                    badge.innerHTML = '<span class="status-dot"></span> Shopify';
+                    showToast(d.message);
+                } else {
+                    badge.className = 'status-badge error';
+                    badge.innerHTML = '<span class="status-dot"></span> Error';
+                    showToast(d.message);
+                }
+            } catch(e) {
+                badge.className = 'status-badge error';
+                badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
+            }
+            btn.disabled = false;
+        }
+        async function importFromShopify() {
+            const btn = document.getElementById('btn-shopify-import');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importando...';
+            try {
+                const res = await fetch('/api/shopify/import', {method:'POST'});
+                const d = await res.json();
+                showToast(d.message);
+                if (d.status === 'ok') loadCatalog();
+            } catch(e) {
+                showToast('Error al importar desde Shopify');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Importar Productos';
+        }
+        
+        // --- LÓGICA CATÁLOGO MULTIMEDIA ---
+        let fullCatalog = {};
+        async function loadCatalog() {
+            const res = await fetch('/api/catalog'); fullCatalog = await res.json();
+            const grid = document.getElementById('catalog-grid'); grid.innerHTML = "";
+            Object.keys(fullCatalog).forEach(name => {
+                const p = fullCatalog[name];
+                const card = document.createElement('div');
+                card.style = "background:rgba(255,255,255,0.03); padding:1.5rem; border-radius:20px; border:1px solid rgba(255,255,255,0.05); cursor:pointer; position:relative; overflow:hidden;";
+                card.innerHTML = `
+                    <div style="font-weight:600; margin-bottom:1rem;">${name}</div>
+                    <div style="display:flex; gap:0.5rem; font-size:1.1rem; color:var(--text-dim);">
+                        ${p.imagen ? '<i class="fa-solid fa-image"></i>' : ''}
+                        ${p.video ? '<i class="fa-solid fa-video"></i>' : ''}
+                        ${p.documento ? '<i class="fa-solid fa-file-pdf"></i>' : ''}
+                    </div>
+                `;
+                card.onclick = () => openProductForm(name);
+                grid.appendChild(card);
+            });
+        }
+        function openProductForm(name = "") {
+            document.getElementById('product-form-container').classList.remove('hidden');
+            const p = name ? fullCatalog[name] : { keywords: "", imagen: "", video: "", documento: "" };
+            document.getElementById('prod-name').value = name;
+            document.getElementById('prod-keys').value = p.keywords || "";
+            document.getElementById('prod-img').value = p.imagen;
+            document.getElementById('prod-video').value = p.video;
+            document.getElementById('prod-doc').value = p.documento;
+            document.getElementById('product-form-title').innerText = name ? "Editar Ficha Técnica" : "Nueva Ficha de Producto";
+            currentProductSelected = name;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+        async function saveProduct() {
+            const name = document.getElementById('prod-name').value;
+            if(!name) return alert("Nombre requerido");
+            fullCatalog[name] = {
+                keywords: document.getElementById('prod-keys').value,
+                imagen: document.getElementById('prod-img').value,
+                video: document.getElementById('prod-video').value,
+                documento: document.getElementById('prod-doc').value
+            };
+            await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
+            showToast("Producto Guardado");
+            loadCatalog();
+            document.getElementById('product-form-container').classList.add('hidden');
+        }
+        async function deleteProduct() {
+            if(!confirm("¿Borrar este producto?")) return;
+            delete fullCatalog[currentProductSelected];
+            await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
+            loadCatalog();
+            document.getElementById('product-form-container').classList.add('hidden');
+        }
+
         function initWS() { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/admin`); ws.onmessage = (e) => { const d = JSON.parse(e.data); if(d.type==='new_message') renderMsg(d); }; }
         function renderMsg(d) { const b = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = `message msg-${d.author}`; div.innerHTML=`<strong>${d.phone}</strong><br>${d.text}`; b.appendChild(div); b.scrollTop = b.scrollHeight; currentPhone=d.phone; document.getElementById('chat-controls').style.display='flex'; }
         async function sendManual() { const i = document.getElementById('manual-msg'); await fetch('/api/send', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({to:currentPhone, text:i.value})}); i.value=""; }
