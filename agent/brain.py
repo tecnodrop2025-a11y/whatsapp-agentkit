@@ -29,10 +29,30 @@ def cargar_config_prompts() -> dict:
         return {}
 
 
+def cargar_conocimiento() -> str:
+    """Lee todos los archivos .txt en la carpeta /knowledge."""
+    conocimiento = "\n\n--- CONOCIMIENTO ADICIONAL ---\n"
+    folder = "knowledge"
+    if not os.path.exists(folder):
+        return ""
+    
+    for filename in os.listdir(folder):
+        if filename.endswith(".txt"):
+            try:
+                with open(os.path.join(folder, filename), "r", encoding="utf-8") as f:
+                    contenido = f.read()
+                    conocimiento += f"\nArchivo: {filename}\n{contenido}\n"
+            except Exception as e:
+                logger.error(f"Error leyendo {filename}: {e}")
+    return conocimiento
+
+
 def cargar_system_prompt() -> str:
-    """Lee el system prompt desde config/prompts.yaml."""
+    """Lee el system prompt y le añade el conocimiento de los archivos .txt."""
     config = cargar_config_prompts()
-    return config.get("system_prompt", "Eres un asistente útil. Responde en español.")
+    prompt_base = config.get("system_prompt", "Eres un asistente útil.")
+    conocimiento = cargar_conocimiento()
+    return f"{prompt_base}\n{conocimiento}"
 
 
 def obtener_mensaje_error() -> str:
