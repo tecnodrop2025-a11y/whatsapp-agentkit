@@ -16,6 +16,7 @@ from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers.whapi import ProveedorWhapi
 from agent.providers.meta import ProveedorMeta
 from agent.providers.textmebot import ProveedorTextMeBot
+from agent.providers.evolution import ProveedorEvolution
 from agent.shopify_client import ShopifyClient
 
 load_dotenv()
@@ -26,6 +27,7 @@ def obtener_proveedor():
     provider_name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
     if provider_name == "meta": return ProveedorMeta()
     if provider_name == "textmebot": return ProveedorTextMeBot()
+    if provider_name == "evolution": return ProveedorEvolution()
     return ProveedorWhapi()
 
 # Logger
@@ -77,10 +79,14 @@ async def get_env_vars():
         "META_PHONE_NUMBER_ID": os.getenv("META_PHONE_NUMBER_ID", ""),
         "META_WABA_ID": os.getenv("META_WABA_ID", ""),
         "TEXTMEBOT_API_KEY": os.getenv("TEXTMEBOT_API_KEY", ""),
+        "EVOLUTION_API_URL": os.getenv("EVOLUTION_API_URL", ""),
+        "EVOLUTION_API_KEY": os.getenv("EVOLUTION_API_KEY", ""),
+        "EVOLUTION_INSTANCE_NAME": os.getenv("EVOLUTION_INSTANCE_NAME", ""),
         "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
         "SHOPIFY_STORE_URL": os.getenv("SHOPIFY_STORE_URL", ""),
         "SHOPIFY_CLIENT_ID": os.getenv("SHOPIFY_CLIENT_ID", ""),
         "SHOPIFY_CLIENT_SECRET": os.getenv("SHOPIFY_CLIENT_SECRET", ""),
+        "SHOPIFY_IMPORT_STOCK": os.getenv("SHOPIFY_IMPORT_STOCK", "true"),
         "APP_URL": os.getenv("APP_URL", "")
     }
 
@@ -88,15 +94,17 @@ async def get_env_vars():
 async def test_connection():
     """Realiza una prueba de conexión básica con el proveedor actual."""
     try:
-        # Intentamos obtener información de la cuenta (esto varía por proveedor)
-        # Por ahora, simplemente validamos que la configuración basica existe
         if not proveedor: return {"status": "error", "message": "Proveedor no iniciado"}
-        
-        # Simulamos un check rápido 
-        # (Podrías llamar a proveedor.get_me() si lo tienes implementado)
-        return {"status": "ok", "message": f"Conectado a {proveedor.__class__.__name__}"}
+        return {"status": "ok", "message": f"Configurado para usar {os.getenv('WHATSAPP_PROVIDER','').upper()}"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@app.post("/api/test/evolution")
+async def test_evolution_api():
+    """Prueba específica para Evolution API."""
+    from agent.providers.evolution import ProveedorEvolution
+    ev = ProveedorEvolution()
+    return await ev.verificar_conexion()
 
 @app.post("/api/test/claude")
 async def test_claude():
@@ -368,22 +376,66 @@ async def webhook_handler(request: Request):
         # 3. Respuesta inteligente (Texto + Multimedia)
         import re
         bloques = [b.strip() for b in respuesta.split("\n\n") if any(c.isalnum() for c in b)]
-        for bloque in bloques:
-            # Detectar etiquetas multimedia: [IMAGEN:], [VIDEO:], [DOCUMENTO:], [AUDIO:]
-            patron = r"\[(IMAGEN|VIDEO|DOCUMENTO|AUDIO):\s*(https?://[^\s\]]+)\]"
-            match = re.search(patron, bloque)
+        
+        # Cargar catálogo para disparadores de producto
+        catalog = {}
+        if os.path.exists("knowledge/catalog.json"):
+            try:
+                with open("knowledge/catalog.json", "r", encoding="utf-8") as f:
+                    catalog = json.load(f)
+            except: pass
 
-            if match:
-                tipo = match.group(1)
-                url_media = match.group(2)
-                texto_restante = re.sub(patron, "", bloque).strip()
+        for bloque in bloques:
+            # 1. Detectar disparador de producto completo: [PRODUCTO: Nombre]
+            patron_prod = r"\[PRODUCTO:\s*(.*?)\]"
+            match_prod = re.search(patron_prod, bloque)
+            
+            if match_prod:
+                prod_name = match_prod.group(1).strip()
+                texto_limpio = re.sub(patron_prod, "", bloque).strip()
+                
+                # Enviar texto primero si queda algo
+                if texto_limpio:
+                    await proveedor.enviar_mensaje(msg.telefono, texto_limpio)
+                
+                # Buscar en catálogo (búsqueda flexible por nombre)
+                prod_data = catalog.get(prod_name)
+                if not prod_data:
+                    # Intento de búsqueda parcial
+                    for k in catalog:
+                        if prod_name.lower() in k.lower():
+                            prod_data = catalog[k]
+                            break
+                
+                if prod_data:
+                    # Enviar Imagen
+                    if prod_data.get("imagen"):
+                        await proveedor.enviar_imagen(msg.telefono, prod_data["imagen"], f"Foto de {prod_name}")
+                        await asyncio.sleep(0.5)
+                    # Enviar Video
+                    if prod_data.get("video"):
+                        await proveedor.enviar_video(msg.telefono, prod_data["video"], f"Video de {prod_name}")
+                        await asyncio.sleep(0.5)
+                    # Enviar PDF
+                    if prod_data.get("documento"):
+                        await proveedor.enviar_documento(msg.telefono, prod_data["documento"], f"Ficha_{prod_name}.pdf")
+                        await asyncio.sleep(0.5)
+                continue
+
+            # 2. Detectar etiquetas multimedia unitarias: [IMAGEN:url], [VIDEO:url], etc.
+            patron_media = r"\[(IMAGEN|VIDEO|DOCUMENTO|AUDIO):\s*(https?://[^\s\]]+)\]"
+            match_media = re.search(patron_media, bloque)
+
+            if match_media:
+                tipo = match_media.group(1)
+                url_media = match_media.group(2)
+                texto_restante = re.sub(patron_media, "", bloque).strip()
 
                 if tipo == "IMAGEN":
                     await proveedor.enviar_imagen(msg.telefono, url_media, texto_restante)
                 elif tipo == "VIDEO":
                     await proveedor.enviar_video(msg.telefono, url_media, texto_restante)
                 elif tipo == "DOCUMENTO":
-                    # Extraer nombre del archivo de la URL
                     nombre_archivo = url_media.split("/")[-1] or "documento"
                     await proveedor.enviar_documento(msg.telefono, url_media, nombre_archivo)
                 elif tipo == "AUDIO":
@@ -395,7 +447,7 @@ async def webhook_handler(request: Request):
 
             # Notificar al Panel Admin
             await manager.broadcast({"type": "new_message", "phone": msg.telefono, "text": bloque, "author": "assistant"})
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(1.0)
 
         await guardar_mensaje(msg.telefono, "user", msg.texto)
         await guardar_mensaje(msg.telefono, "assistant", respuesta)

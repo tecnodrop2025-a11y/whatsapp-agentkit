@@ -373,6 +373,7 @@
             document.getElementById('fields-whapi').style.display = p === 'whapi' ? 'block' : 'none';
             document.getElementById('fields-meta').style.display = p === 'meta' ? 'block' : 'none';
             document.getElementById('fields-textmebot').style.display = p === 'textmebot' ? 'block' : 'none';
+            document.getElementById('fields-evolution').style.display = p === 'evolution' ? 'block' : 'none'; // Added for Evolution
         }
         async function loadEnv() {
             const res = await fetch('/api/env'); const d = await res.json();
@@ -382,6 +383,9 @@
             document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || '';
             document.getElementById('meta-waba').value = d.META_WABA_ID || '';
             document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || '';
+            document.getElementById('evolution-url').value = d.EVOLUTION_API_URL || ''; // Added for Evolution
+            document.getElementById('evolution-key').value = d.EVOLUTION_API_KEY || ''; // Added for Evolution
+            document.getElementById('evolution-instance').value = d.EVOLUTION_INSTANCE_NAME || ''; // Added for Evolution
             document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || '';
             document.getElementById('shopify-store').value = d.SHOPIFY_STORE_URL || '';
             document.getElementById('shopify-appurl').value = d.APP_URL || '';
@@ -398,6 +402,9 @@
                 META_PHONE_NUMBER_ID: document.getElementById('meta-phone').value,
                 META_WABA_ID: document.getElementById('meta-waba').value,
                 TEXTMEBOT_API_KEY: document.getElementById('textmebot-key').value,
+                EVOLUTION_API_URL: document.getElementById('evolution-url').value, // Added for Evolution
+                EVOLUTION_API_KEY: document.getElementById('evolution-key').value, // Added for Evolution
+                EVOLUTION_INSTANCE_NAME: document.getElementById('evolution-instance').value, // Added for Evolution
                 ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value,
                 SHOPIFY_STORE_URL: document.getElementById('shopify-store').value,
                 APP_URL: document.getElementById('shopify-appurl').value,
@@ -436,6 +443,31 @@
             updateHeaderStatus('wa', statusClass, statusText);
             
             showToast(d.message);
+            btn.disabled = false;
+        }
+
+        async function testEvolution() {
+            const badge = document.getElementById('wa-status'); // Evolution uses the same WA status badge
+            const btn = document.getElementById('btn-test-wa'); // Evolution uses the same WA test button
+            badge.className = 'status-badge testing';
+            badge.innerHTML = '<span class="status-dot"></span> Probando Evolution...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/test/evolution', {method: 'POST'});
+                const d = await res.json();
+                const statusClass = d.status === 'ok' ? 'connected' : 'error';
+                const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
+                
+                badge.className = 'status-badge ' + statusClass;
+                badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
+                updateHeaderStatus('wa', statusClass, statusText); // Update header status for WA
+                showToast(d.message);
+            } catch(e) {
+                badge.className = 'status-badge error';
+                badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
+                updateHeaderStatus('wa', 'error', 'Error');
+                showToast('Error al conectar con Evolution API');
+            }
             btn.disabled = false;
         }
 
