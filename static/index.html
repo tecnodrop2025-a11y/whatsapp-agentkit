@@ -133,9 +133,14 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header style="display:flex; justify-content:space-between; align-items:center;">
             <h1>Carla Bot — Centro de Control</h1>
-            <div id="ws-status" style="color: var(--success); font-weight: 600; font-size: 0.8rem;">● CONECTADO</div>
+            <div style="display:flex; align-items:center; gap:1.2rem;">
+                <div id="header-status-wa" class="status-badge idle" style="background:transparent; border:1px solid rgba(37,211,102,0.2);"><i class="fa-brands fa-whatsapp"></i> WhatsApp</div>
+                <div id="header-status-claude" class="status-badge idle" style="background:transparent; border:1px solid rgba(129,140,248,0.2);"><i class="fa-solid fa-brain"></i> Claude</div>
+                <div id="header-status-shopify" class="status-badge idle" style="background:transparent; border:1px solid rgba(149,211,118,0.2);"><i class="fa-brands fa-shopify"></i> Shopify</div>
+                <div id="ws-status" style="color: var(--success); font-weight: 700; font-size: 0.75rem; letter-spacing:0.05rem;">● CONECTADO</div>
+            </div>
         </header>
         <div class="dashboard">
             <div class="sidebar">
@@ -356,6 +361,17 @@
             showToast('Configuración Guardada ✅');
         }
         async function testLink() { const res = await fetch('/api/test', {method:'POST'}); const d = await res.json(); showToast(d.message); }
+        function updateHeaderStatus(id, className, text) {
+            const el = document.getElementById('header-status-' + id);
+            if (!el) return;
+            el.className = 'status-badge ' + className;
+            let icon = '';
+            if (id === 'wa') icon = '<i class="fa-brands fa-whatsapp"></i> ';
+            if (id === 'claude') icon = '<i class="fa-solid fa-brain"></i> ';
+            if (id === 'shopify') icon = '<i class="fa-brands fa-shopify"></i> ';
+            el.innerHTML = icon + text;
+        }
+
         async function testWA() {
             const badge = document.getElementById('wa-status');
             const btn = document.getElementById('btn-test-wa');
@@ -364,11 +380,17 @@
             btn.disabled = true;
             const res = await fetch('/api/test', {method:'POST'});
             const d = await res.json();
-            badge.className = d.status === 'ok' ? 'status-badge connected' : 'status-badge error';
-            badge.innerHTML = `<span class="status-dot"></span> ${d.status === 'ok' ? 'Conectado' : 'Error'}`;
+            const statusClass = d.status === 'ok' ? 'connected' : 'error';
+            const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
+            
+            badge.className = 'status-badge ' + statusClass;
+            badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
+            updateHeaderStatus('wa', statusClass, statusText);
+            
             showToast(d.message);
             btn.disabled = false;
         }
+
         async function testShopifyCfg() {
             const badge = document.getElementById('shopify-cfg-status');
             const btn = document.getElementById('btn-test-shopify');
@@ -377,11 +399,24 @@
             btn.disabled = true;
             const res = await fetch('/api/shopify/test', {method:'POST'});
             const d = await res.json();
-            badge.className = d.status === 'ok' ? 'status-badge connected' : 'status-badge error';
-            badge.innerHTML = `<span class="status-dot"></span> ${d.status === 'ok' ? 'Conectado' : 'Error'}`;
+            const statusClass = d.status === 'ok' ? 'connected' : 'error';
+            const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
+
+            badge.className = 'status-badge ' + statusClass;
+            badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
+            updateHeaderStatus('shopify', statusClass, statusText);
+            
+            // Sincronizar también el del catálogo si existe
+            const catBadge = document.getElementById('shopify-status');
+            if(catBadge) {
+                catBadge.className = 'status-badge ' + statusClass;
+                catBadge.innerHTML = `<span class="status-dot"></span> Shopify`;
+            }
+
             showToast(d.message);
             btn.disabled = false;
         }
+
         function connectShopify() {
             const appUrl = document.getElementById('shopify-appurl').value || window.location.origin;
             window.open(`${appUrl}/shopify/install`, '_blank');
@@ -395,21 +430,22 @@
             try {
                 const res = await fetch('/api/test/claude', {method: 'POST'});
                 const d = await res.json();
-                if (d.status === 'ok') {
-                    badge.className = 'status-badge connected';
-                    badge.innerHTML = '<span class="status-dot"></span> Conectado';
-                    showToast(d.message);
-                } else {
-                    badge.className = 'status-badge error';
-                    badge.innerHTML = '<span class="status-dot"></span> Error';
-                    showToast(d.message);
-                }
+                const statusClass = d.status === 'ok' ? 'connected' : 'error';
+                const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
+                
+                badge.className = 'status-badge ' + statusClass;
+                badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
+                updateHeaderStatus('claude', statusClass, statusText);
+
+                showToast(d.message);
             } catch(e) {
                 badge.className = 'status-badge error';
                 badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
+                updateHeaderStatus('claude', 'error', 'Error');
             }
             btn.disabled = false;
         }
+
         async function loadKnowledge() { const res = await fetch('/api/knowledge'); const d = await res.json(); const grid = document.getElementById('knowledge-grid'); grid.innerHTML = ""; d.files.forEach(f => { const c = document.createElement('div'); c.style.padding="1.5rem"; c.style.background="rgba(255,255,255,0.03)"; c.style.borderRadius="20px"; c.style.cursor="pointer"; c.innerHTML=`📄 ${f}`; c.onclick=()=>openFile(f); grid.appendChild(c); }); }
         async function openFile(n) { currentFile=n; const res=await fetch(`/api/knowledge/${n}`); const d=await res.json(); document.getElementById('editing-filename').innerText=n; document.getElementById('file-editor').value=d.content; document.getElementById('file-editor-container').classList.remove('hidden'); }
         async function saveFile() { await fetch(`/api/knowledge/${currentFile}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content: document.getElementById('file-editor').value}) }); showToast("Guardado"); }
