@@ -24,6 +24,88 @@
         .main-card { background: var(--card-bg); backdrop-filter: blur(16px); padding: 2.2rem; border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); min-height: 600px; }
         h2 { margin-bottom: 1.5rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 0.8rem; }
         .section-box { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem; }
+
+        /* CATALOG PREMIUM CARDS */
+        .catalog-card-premium {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .catalog-card-premium:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .card-image-box {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            background: #0d1b2e;
+            position: relative;
+        }
+        .card-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .catalog-card-premium:hover .card-image-box img { transform: scale(1.1); }
+        
+        .no-image-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.1);
+        }
+        .shopify-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #95d376;
+            color: #0a1628;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .card-content { padding: 1.2rem; }
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .card-price { color: #95d376; font-weight: 700; font-size: 1rem; }
+        .card-stock { color: var(--text-dim); font-size: 0.75rem; }
+        .card-media-icons {
+            display: flex;
+            gap: 0.8rem;
+            color: var(--text-dim);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 0.8rem;
+        }
+        .card-media-icons i:hover { color: var(--primary); }
+
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
         select, input, textarea { width: 100%; padding: 0.9rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
@@ -168,11 +250,16 @@
                         <div class="section-box">
                             <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text" id="prod-name" placeholder="Ej: Parches AlivioNatural de 60u"></div>
                             <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave / Alias (Separados por coma)</label><input type="text" id="prod-keys" placeholder="Ej: 60u, grande, un mes, parches rojos"></div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
+                                <div class="form-group"><label><i class="fa-solid fa-tag"></i> Precio</label><input type="text" id="prod-price" placeholder="0"></div>
+                                <div class="form-group"><label><i class="fa-solid fa-boxes-stacked"></i> Stock</label><input type="number" id="prod-stock" placeholder="0"></div>
+                            </div>
+                            <div class="form-group"><label><i class="fa-solid fa-align-left"></i> Descripción del Producto</label><textarea id="prod-desc" style="min-height:100px; font-family:inherit; font-size:0.9rem;" placeholder="Detalles del producto..."></textarea></div>
                             <div class="form-group"><label><i class="fa-solid fa-image"></i> Link de Imagen (jpg, png)</label><input type="text" id="prod-img" placeholder="https://..."></div>
                             <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
                             <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Documento (pdf)</label><input type="text" id="prod-doc" placeholder="https://..."></div>
                             <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-                                <button class="btn btn-success" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Guardar Ficha</button>
+                                <button class="btn btn-success" id="btn-save-product" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Guardar Ficha</button>
                                 <button class="btn" onclick="document.getElementById('product-form-container').classList.add('hidden')" style="background:rgba(255,255,255,0.05);">Cancelar</button>
                             </div>
                         </div>
@@ -460,27 +547,47 @@
             Object.keys(fullCatalog).forEach(name => {
                 const p = fullCatalog[name];
                 const card = document.createElement('div');
-                card.style = "background:rgba(255,255,255,0.03); padding:1.5rem; border-radius:20px; border:1px solid rgba(255,255,255,0.05); cursor:pointer; position:relative; overflow:hidden;";
+                card.className = "catalog-card-premium";
+                card.onclick = () => openProductForm(name);
+                
+                // Formatear precio si existe
+                const priceStr = p.precio ? `$${parseFloat(p.precio).toLocaleString('es-CL')}` : '';
+                const stockStr = p.stock !== undefined ? `Stock: ${p.stock}` : '';
+
                 card.innerHTML = `
-                    <div style="font-weight:600; margin-bottom:1rem;">${name}</div>
-                    <div style="display:flex; gap:0.5rem; font-size:1.1rem; color:var(--text-dim);">
-                        ${p.imagen ? '<i class="fa-solid fa-image"></i>' : ''}
-                        ${p.video ? '<i class="fa-solid fa-video"></i>' : ''}
-                        ${p.documento ? '<i class="fa-solid fa-file-pdf"></i>' : ''}
+                    <div class="card-image-box">
+                        ${p.imagen 
+                            ? `<img src="${p.imagen}" loading="lazy">` 
+                            : `<div class="no-image-placeholder"><i class="fa-solid fa-box-open fa-2x"></i></div>`
+                        }
+                        ${p.shopify_id ? '<div class="shopify-badge"><i class="fa-brands fa-shopify"></i></div>' : ''}
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${name}</div>
+                        <div class="card-info">
+                            <span class="card-price">${priceStr}</span>
+                            <span class="card-stock">${stockStr}</span>
+                        </div>
+                        <div class="card-media-icons">
+                            ${p.video ? '<i class="fa-solid fa-circle-play" title="Tiene Video"></i>' : ''}
+                            ${p.documento ? '<i class="fa-solid fa-file-pdf" title="Tiene PDF"></i>' : ''}
+                        </div>
                     </div>
                 `;
-                card.onclick = () => openProductForm(name);
                 grid.appendChild(card);
             });
         }
         function openProductForm(name = "") {
             document.getElementById('product-form-container').classList.remove('hidden');
-            const p = name ? fullCatalog[name] : { keywords: "", imagen: "", video: "", documento: "" };
+            const p = name ? fullCatalog[name] : { keywords: "", imagen: "", video: "", documento: "", descripcion: "", precio: "", stock: 0 };
             document.getElementById('prod-name').value = name;
             document.getElementById('prod-keys').value = p.keywords || "";
-            document.getElementById('prod-img').value = p.imagen;
-            document.getElementById('prod-video').value = p.video;
-            document.getElementById('prod-doc').value = p.documento;
+            document.getElementById('prod-img').value = p.imagen || "";
+            document.getElementById('prod-video').value = p.video || "";
+            document.getElementById('prod-doc').value = p.documento || "";
+            document.getElementById('prod-desc').value = p.descripcion || "";
+            document.getElementById('prod-price').value = p.precio || "";
+            document.getElementById('prod-stock').value = p.stock || 0;
             document.getElementById('product-form-title').innerText = name ? "Editar Ficha Técnica" : "Nueva Ficha de Producto";
             currentProductSelected = name;
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -488,16 +595,27 @@
         async function saveProduct() {
             const name = document.getElementById('prod-name').value;
             if(!name) return alert("Nombre requerido");
+            const btn = document.getElementById('btn-save-product');
+            btn.disabled = true;
+
+            // Mantener el shopify_id si existe
+            const oldData = fullCatalog[name] || {};
+
             fullCatalog[name] = {
+                ...oldData,
                 keywords: document.getElementById('prod-keys').value,
                 imagen: document.getElementById('prod-img').value,
                 video: document.getElementById('prod-video').value,
-                documento: document.getElementById('prod-doc').value
+                documento: document.getElementById('prod-doc').value,
+                descripcion: document.getElementById('prod-desc').value,
+                precio: document.getElementById('prod-price').value,
+                stock: parseInt(document.getElementById('prod-stock').value) || 0
             };
             await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
             showToast("Producto Guardado");
             loadCatalog();
             document.getElementById('product-form-container').classList.add('hidden');
+            btn.disabled = false;
         }
         async function deleteProduct() {
             if(!confirm("¿Borrar este producto?")) return;
