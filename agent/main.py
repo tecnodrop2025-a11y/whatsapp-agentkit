@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv, set_key
 
 from agent.brain import generar_respuesta, cargar_config_prompts
-from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
+from agent.memory import inicializar_db, guardar_mensaje, obtener_historial, obtener_config_db, guardar_config_db
 from agent.providers.whapi import ProveedorWhapi
 from agent.providers.meta import ProveedorMeta
 from agent.providers.textmebot import ProveedorTextMeBot
@@ -22,12 +22,14 @@ from agent.shopify_client import ShopifyClient
 load_dotenv()
 
 # --- CONFIGURACIÓN GLOBAL ---
-def obtener_proveedor():
+def obtener_proveedor(name: str = None):
     """Función de fábrica para instanciar el proveedor configurado."""
-    provider_name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
-    if provider_name == "meta": return ProveedorMeta()
-    if provider_name == "textmebot": return ProveedorTextMeBot()
-    if provider_name == "evolution": return ProveedorEvolution()
+    if not name:
+        name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
+    
+    if name == "meta": return ProveedorMeta()
+    if name == "textmebot": return ProveedorTextMeBot()
+    if name == "evolution": return ProveedorEvolution()
     return ProveedorWhapi()
 
 # Logger
@@ -71,23 +73,23 @@ app = FastAPI(title="Carla Bot Admin", lifespan=lifespan)
 
 @app.get("/api/env")
 async def get_env_vars():
-    """Lee las variables técnicas clave del .env."""
+    """Lee las variables técnicas clave (prioriza DB sobre .env)."""
     return {
-        "WHATSAPP_PROVIDER": os.getenv("WHATSAPP_PROVIDER", "whapi"),
-        "WHAPI_TOKEN": os.getenv("WHAPI_TOKEN", ""),
-        "META_ACCESS_TOKEN": os.getenv("META_ACCESS_TOKEN", ""),
-        "META_PHONE_NUMBER_ID": os.getenv("META_PHONE_NUMBER_ID", ""),
-        "META_WABA_ID": os.getenv("META_WABA_ID", ""),
-        "TEXTMEBOT_API_KEY": os.getenv("TEXTMEBOT_API_KEY", ""),
-        "EVOLUTION_API_URL": os.getenv("EVOLUTION_API_URL", ""),
-        "EVOLUTION_API_KEY": os.getenv("EVOLUTION_API_KEY", ""),
-        "EVOLUTION_INSTANCE_NAME": os.getenv("EVOLUTION_INSTANCE_NAME", ""),
-        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
-        "SHOPIFY_STORE_URL": os.getenv("SHOPIFY_STORE_URL", ""),
-        "SHOPIFY_CLIENT_ID": os.getenv("SHOPIFY_CLIENT_ID", ""),
-        "SHOPIFY_CLIENT_SECRET": os.getenv("SHOPIFY_CLIENT_SECRET", ""),
-        "SHOPIFY_IMPORT_STOCK": os.getenv("SHOPIFY_IMPORT_STOCK", "true"),
-        "APP_URL": os.getenv("APP_URL", "")
+        "WHATSAPP_PROVIDER": await obtener_config_db("WHATSAPP_PROVIDER", "whapi"),
+        "WHAPI_TOKEN": await obtener_config_db("WHAPI_TOKEN", ""),
+        "META_ACCESS_TOKEN": await obtener_config_db("META_ACCESS_TOKEN", ""),
+        "META_PHONE_NUMBER_ID": await obtener_config_db("META_PHONE_NUMBER_ID", ""),
+        "META_WABA_ID": await obtener_config_db("META_WABA_ID", ""),
+        "TEXTMEBOT_API_KEY": await obtener_config_db("TEXTMEBOT_API_KEY", ""),
+        "EVOLUTION_API_URL": await obtener_config_db("EVOLUTION_API_URL", ""),
+        "EVOLUTION_API_KEY": await obtener_config_db("EVOLUTION_API_KEY", ""),
+        "EVOLUTION_INSTANCE_NAME": await obtener_config_db("EVOLUTION_INSTANCE_NAME", ""),
+        "ANTHROPIC_API_KEY": await obtener_config_db("ANTHROPIC_API_KEY", ""),
+        "SHOPIFY_STORE_URL": await obtener_config_db("SHOPIFY_STORE_URL", ""),
+        "SHOPIFY_CLIENT_ID": await obtener_config_db("SHOPIFY_CLIENT_ID", ""),
+        "SHOPIFY_CLIENT_SECRET": await obtener_config_db("SHOPIFY_CLIENT_SECRET", ""),
+        "SHOPIFY_IMPORT_STOCK": await obtener_config_db("SHOPIFY_IMPORT_STOCK", "true"),
+        "APP_URL": await obtener_config_db("APP_URL", "")
     }
 
 @app.post("/api/test")
@@ -170,27 +172,33 @@ async def test_claude():
 
 @app.post("/api/env")
 async def save_env_vars(data: dict = Body(...)):
-    """Sobrescribe las variables en el archivo .env."""
+    """Guarda variables en DB (persistente) y en .env (local)."""
     try:
-        lines = []
-        if os.path.exists(".env"):
-            with open(".env", "r", encoding="utf-8") as f:
-                lines = f.readlines()
-        
-        # Eliminar líneas viejas de las variables que estamos editando
-        keys_to_update = data.keys()
-        new_lines = [l for l in lines if not any(l.startswith(f"{k}=") for k in keys_to_update)]
-        
-        # Añadir las nuevas
+        # 1. Guardar en Base de Datos (Persistente en Railway)
         for k, v in data.items():
-            new_lines.append(f"{k}={v}\n")
+            await guardar_config_db(k, str(v))
             
-        with open(".env", "w", encoding="utf-8") as f:
-            f.writelines(new_lines)
+        # 2. Intentar guardar en .env (solo para desarrollo local o si es permitido)
+        try:
+            lines = []
+            if os.path.exists(".env"):
+                with open(".env", "r", encoding="utf-8") as f:
+                    lines = f.readlines()
             
-        load_dotenv(override=True) # Recargar en memoria
-        return {"status": "ok"}
+            keys_to_update = data.keys()
+            new_lines = [l for l in lines if not any(l.startswith(f"{k}=") for l in keys_to_update)]
+            for k, v in data.items():
+                new_lines.append(f"{k}={v}\n")
+                
+            with open(".env", "w", encoding="utf-8") as f:
+                f.writelines(new_lines)
+            load_dotenv(override=True)
+        except Exception as env_err:
+            logger.warning(f"No se pudo escribir en .env (normal en Railway): {env_err}")
+
+        return {"status": "ok", "message": "Configuración guardada en Base de Datos"}
     except Exception as e:
+        logger.error(f"Error guardando config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/config")
@@ -410,11 +418,11 @@ async def webhook_debug(request: Request):
 
 @app.post("/webhook")
 async def webhook_handler(request: Request):
-    # Recargar .env y proveedor dinámicamente para tomar cambios sin reiniciar
-    load_dotenv(override=True)
-    proveedor_actual = obtener_proveedor()
+    # Cargar proveedor dinámicamente desde la Base de Datos
+    provider_name = await obtener_config_db("WHATSAPP_PROVIDER", "whapi")
+    proveedor_actual = obtener_proveedor(provider_name.lower())
     
-    logger.info(f"[WEBHOOK] POST recibido - Proveedor: {os.getenv('WHATSAPP_PROVIDER','?')}")
+    logger.info(f"[WEBHOOK] POST recibido - Proveedor DB: {provider_name}")
     
     mensajes = await proveedor_actual.parsear_webhook(request)
     logger.info(f"[WEBHOOK] Mensajes parseados: {len(mensajes)}")
