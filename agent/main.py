@@ -100,11 +100,46 @@ async def test_connection():
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/test/evolution")
-async def test_evolution_api():
-    """Prueba específica para Evolution API."""
-    from agent.providers.evolution import ProveedorEvolution
-    ev = ProveedorEvolution()
-    return await ev.verificar_conexion()
+async def test_evolution_api(request: Request):
+    """Prueba específica para Evolution API con valores del formulario."""
+    try:
+        body = await request.json()
+        api_url = body.get("url", "").rstrip("/")
+        api_key = body.get("key", "")
+        instance = body.get("instance", "")
+    except Exception:
+        api_url = api_key = instance = ""
+
+    # Si no se pasan desde el form, usar .env
+    if not api_url: api_url = os.getenv("EVOLUTION_API_URL", "").rstrip("/")
+    if not api_key: api_key = os.getenv("EVOLUTION_API_KEY", "")
+    if not instance: instance = os.getenv("EVOLUTION_INSTANCE_NAME", "")
+
+    if not api_url or not api_key or not instance:
+        return {"status": "error", "message": "Faltan datos: URL, Token o Nombre de instancia vacíos"}
+
+    import httpx as _httpx
+    url = f"{api_url}/instance/connectionState/{instance}"
+    headers = {"apikey": api_key}
+    try:
+        async with _httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            state = data.get("instance", {}).get("state", "unknown")
+            emoji = "✅" if state == "open" else "⚠️"
+            return {"status": "ok" if state == "open" else "error",
+                    "message": f"{emoji} Instancia '{instance}' está: {state}"}
+        elif r.status_code == 401:
+            return {"status": "error", "message": "❌ Token inválido — verifica el Token de la instancia"}
+        elif r.status_code == 404:
+            return {"status": "error", "message": f"❌ Instancia '{instance}' no encontrada"}
+        else:
+            return {"status": "error", "message": f"Error HTTP {r.status_code}: {r.text[:80]}"}
+    except _httpx.ConnectError:
+        return {"status": "error", "message": "❌ No se pudo conectar al servidor Evolution — verifica la URL"}
+    except Exception as e:
+        return {"status": "error", "message": f"Error: {str(e)[:80]}"}
 
 @app.post("/api/test/claude")
 async def test_claude():

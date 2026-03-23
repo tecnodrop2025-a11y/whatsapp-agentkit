@@ -881,26 +881,38 @@
         }
 
         async function testEvolution() {
-            const badge = document.getElementById('wa-status'); // Evolution uses the same WA status badge
-            const btn = document.getElementById('btn-test-wa'); // Evolution uses the same WA test button
+            const badge = document.getElementById('wa-status');
+            const btn = document.getElementById('btn-test-wa');
             badge.className = 'status-badge testing';
             badge.innerHTML = '<span class="status-dot"></span> Probando Evolution...';
             btn.disabled = true;
+
+            // Leer los valores ACTUALES del formulario (no depender de las vars de entorno)
+            const payload = {
+                url: document.getElementById('evolution-url').value.trim(),
+                key: document.getElementById('evolution-key').value.trim(),
+                instance: document.getElementById('evolution-instance').value.trim()
+            };
+
             try {
-                const res = await fetch('/api/test/evolution', { method: 'POST' });
+                const res = await fetch('/api/test/evolution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
                 const d = await res.json();
                 const statusClass = d.status === 'ok' ? 'connected' : 'error';
                 const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
 
                 badge.className = 'status-badge ' + statusClass;
                 badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
-                updateHeaderStatus('wa', statusClass, statusText); // Update header status for WA
+                updateHeaderStatus('wa', statusClass, statusText);
                 showToast(d.message);
             } catch (e) {
                 badge.className = 'status-badge error';
                 badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
                 updateHeaderStatus('wa', 'error', 'Error');
-                showToast('Error al conectar con Evolution API');
+                showToast('No se pudo alcanzar el servidor Evolution');
             }
             btn.disabled = false;
         }
