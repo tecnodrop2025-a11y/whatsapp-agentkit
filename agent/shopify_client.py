@@ -80,7 +80,10 @@ class ShopifyClient:
             # Precio desde la primera variante
             variants = p.get("variants", [])
             precio = variants[0].get("price", "0") if variants else "0"
-            stock = sum(v.get("inventory_quantity", 0) for v in variants)
+            
+            # Stock (opcional según configuración)
+            import_stock = os.getenv("SHOPIFY_IMPORT_STOCK", "true").lower() == "true"
+            stock = sum(v.get("inventory_quantity", 0) for v in variants) if import_stock else 0
 
             # Tags de Shopify como palabras clave
             tags = p.get("tags", "")

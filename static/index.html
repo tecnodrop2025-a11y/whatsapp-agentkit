@@ -204,6 +204,10 @@
                             <div class="form-group"><label>Client ID</label><input type="text" id="shopify-clientid" placeholder="95acd..."></div>
                             <div class="form-group"><label>Client Secret</label><input type="text" id="shopify-secret" placeholder="shpss_..."></div>
                         </div>
+                        <div style="margin: 0.5rem 0 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                            <input type="checkbox" id="shopify-import-stock" style="width: auto; height: 18px; accent-color: #95d376; cursor: pointer;">
+                            <label for="shopify-import-stock" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.9rem; color: white;">🔋 Sincronizar Stock Real de Shopify</label>
+                        </div>
                         <div style="display:flex; gap:1rem; margin-top:0.5rem; flex-wrap:wrap;">
                             <button class="btn" id="btn-test-shopify" onclick="testShopifyCfg()" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
                                 <i class="fa-solid fa-plug"></i> Probar Conexión
@@ -341,6 +345,7 @@
             document.getElementById('shopify-appurl').value = d.APP_URL || '';
             document.getElementById('shopify-clientid').value = d.SHOPIFY_CLIENT_ID || '';
             document.getElementById('shopify-secret').value = d.SHOPIFY_CLIENT_SECRET || '';
+            document.getElementById('shopify-import-stock').checked = d.SHOPIFY_IMPORT_STOCK === 'true';
             toggleProvFields();
         }
         async function saveSettings() {
@@ -355,7 +360,8 @@
                 SHOPIFY_STORE_URL: document.getElementById('shopify-store').value,
                 APP_URL: document.getElementById('shopify-appurl').value,
                 SHOPIFY_CLIENT_ID: document.getElementById('shopify-clientid').value,
-                SHOPIFY_CLIENT_SECRET: document.getElementById('shopify-secret').value
+                SHOPIFY_CLIENT_SECRET: document.getElementById('shopify-secret').value,
+                SHOPIFY_IMPORT_STOCK: document.getElementById('shopify-import-stock').checked ? 'true' : 'false'
             };
             await fetch('/api/env', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
             showToast('Configuración Guardada ✅');
