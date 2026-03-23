@@ -41,41 +41,10 @@ class Mensaje(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
-class Configuracion(Base):
-    """Modelo para persistir variables de configuración en DB."""
-    __tablename__ = "configuraciones"
-    
-    key: Mapped[str] = mapped_column(String(100), primary_key=True)
-    value: Mapped[str] = mapped_column(Text)
-
-
 async def inicializar_db():
     """Crea las tablas si no existen."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-
-async def obtener_config_db(key: str, default: str = "") -> str:
-    """Obtiene un valor de configuración de la base de datos."""
-    async with async_session() as session:
-        query = select(Configuracion).where(Configuracion.key == key)
-        result = await session.execute(query)
-        cfg = result.scalar_one_of_none()
-        return cfg.value if cfg else os.getenv(key, default)
-
-
-async def guardar_config_db(key: str, value: str):
-    """Guarda o actualiza un valor de configuración en la base de datos."""
-    async with async_session() as session:
-        async with session.begin():
-            query = select(Configuracion).where(Configuracion.key == key)
-            result = await session.execute(query)
-            cfg = result.scalar_one_of_none()
-            if cfg:
-                cfg.value = value
-            else:
-                session.add(Configuracion(key=key, value=value))
-        await session.commit()
 
 
 async def guardar_mensaje(telefono: str, role: str, content: str):

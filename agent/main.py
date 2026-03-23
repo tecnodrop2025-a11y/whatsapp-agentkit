@@ -12,24 +12,20 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv, set_key
 
 from agent.brain import generar_respuesta, cargar_config_prompts
-from agent.memory import inicializar_db, guardar_mensaje, obtener_historial, obtener_config_db, guardar_config_db
+from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers.whapi import ProveedorWhapi
 from agent.providers.meta import ProveedorMeta
 from agent.providers.textmebot import ProveedorTextMeBot
-from agent.providers.evolution import ProveedorEvolution
 from agent.shopify_client import ShopifyClient
 
 load_dotenv()
 
 # --- CONFIGURACIÓN GLOBAL ---
-def obtener_proveedor(name: str = None):
+def obtener_proveedor():
     """Función de fábrica para instanciar el proveedor configurado."""
-    if not name:
-        name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
-    
-    if name == "meta": return ProveedorMeta()
-    if name == "textmebot": return ProveedorTextMeBot()
-    if name == "evolution": return ProveedorEvolution()
+    provider_name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
+    if provider_name == "meta": return ProveedorMeta()
+    if provider_name == "textmebot": return ProveedorTextMeBot()
     return ProveedorWhapi()
 
 # Logger
@@ -73,75 +69,34 @@ app = FastAPI(title="Carla Bot Admin", lifespan=lifespan)
 
 @app.get("/api/env")
 async def get_env_vars():
-    """Lee las variables técnicas clave (prioriza DB sobre .env)."""
+    """Lee las variables técnicas clave del .env."""
     return {
-        "WHATSAPP_PROVIDER": await obtener_config_db("WHATSAPP_PROVIDER", "whapi"),
-        "WHAPI_TOKEN": await obtener_config_db("WHAPI_TOKEN", ""),
-        "META_ACCESS_TOKEN": await obtener_config_db("META_ACCESS_TOKEN", ""),
-        "META_PHONE_NUMBER_ID": await obtener_config_db("META_PHONE_NUMBER_ID", ""),
-        "META_WABA_ID": await obtener_config_db("META_WABA_ID", ""),
-        "TEXTMEBOT_API_KEY": await obtener_config_db("TEXTMEBOT_API_KEY", ""),
-        "EVOLUTION_API_URL": await obtener_config_db("EVOLUTION_API_URL", ""),
-        "EVOLUTION_API_KEY": await obtener_config_db("EVOLUTION_API_KEY", ""),
-        "EVOLUTION_INSTANCE_NAME": await obtener_config_db("EVOLUTION_INSTANCE_NAME", ""),
-        "ANTHROPIC_API_KEY": await obtener_config_db("ANTHROPIC_API_KEY", ""),
-        "SHOPIFY_STORE_URL": await obtener_config_db("SHOPIFY_STORE_URL", ""),
-        "SHOPIFY_CLIENT_ID": await obtener_config_db("SHOPIFY_CLIENT_ID", ""),
-        "SHOPIFY_CLIENT_SECRET": await obtener_config_db("SHOPIFY_CLIENT_SECRET", ""),
-        "SHOPIFY_IMPORT_STOCK": await obtener_config_db("SHOPIFY_IMPORT_STOCK", "true"),
-        "APP_URL": await obtener_config_db("APP_URL", "")
+        "WHATSAPP_PROVIDER": os.getenv("WHATSAPP_PROVIDER", "whapi"),
+        "WHAPI_TOKEN": os.getenv("WHAPI_TOKEN", ""),
+        "META_ACCESS_TOKEN": os.getenv("META_ACCESS_TOKEN", ""),
+        "META_PHONE_NUMBER_ID": os.getenv("META_PHONE_NUMBER_ID", ""),
+        "META_WABA_ID": os.getenv("META_WABA_ID", ""),
+        "TEXTMEBOT_API_KEY": os.getenv("TEXTMEBOT_API_KEY", ""),
+        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
+        "SHOPIFY_STORE_URL": os.getenv("SHOPIFY_STORE_URL", ""),
+        "SHOPIFY_CLIENT_ID": os.getenv("SHOPIFY_CLIENT_ID", ""),
+        "SHOPIFY_CLIENT_SECRET": os.getenv("SHOPIFY_CLIENT_SECRET", ""),
+        "APP_URL": os.getenv("APP_URL", "")
     }
 
 @app.post("/api/test")
 async def test_connection():
     """Realiza una prueba de conexión básica con el proveedor actual."""
     try:
+        # Intentamos obtener información de la cuenta (esto varía por proveedor)
+        # Por ahora, simplemente validamos que la configuración basica existe
         if not proveedor: return {"status": "error", "message": "Proveedor no iniciado"}
-        return {"status": "ok", "message": f"Configurado para usar {os.getenv('WHATSAPP_PROVIDER','').upper()}"}
+        
+        # Simulamos un check rápido 
+        # (Podrías llamar a proveedor.get_me() si lo tienes implementado)
+        return {"status": "ok", "message": f"Conectado a {proveedor.__class__.__name__}"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-@app.post("/api/test/evolution")
-async def test_evolution_api(request: Request):
-    """Prueba específica para Evolution API con valores del formulario."""
-    try:
-        body = await request.json()
-        api_url = body.get("url", "").rstrip("/")
-        api_key = body.get("key", "")
-        instance = body.get("instance", "")
-    except Exception:
-        api_url = api_key = instance = ""
-
-    # Si no se pasan desde el form, usar .env
-    if not api_url: api_url = os.getenv("EVOLUTION_API_URL", "").rstrip("/")
-    if not api_key: api_key = os.getenv("EVOLUTION_API_KEY", "")
-    if not instance: instance = os.getenv("EVOLUTION_INSTANCE_NAME", "")
-
-    if not api_url or not api_key or not instance:
-        return {"status": "error", "message": "Faltan datos: URL, Token o Nombre de instancia vacíos"}
-
-    import httpx as _httpx
-    url = f"{api_url}/instance/connectionState/{instance}"
-    headers = {"apikey": api_key}
-    try:
-        async with _httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(url, headers=headers)
-        if r.status_code == 200:
-            data = r.json()
-            state = data.get("instance", {}).get("state", "unknown")
-            emoji = "✅" if state == "open" else "⚠️"
-            return {"status": "ok" if state == "open" else "error",
-                    "message": f"{emoji} Instancia '{instance}' está: {state}"}
-        elif r.status_code == 401:
-            return {"status": "error", "message": "❌ Token inválido — verifica el Token de la instancia"}
-        elif r.status_code == 404:
-            return {"status": "error", "message": f"❌ Instancia '{instance}' no encontrada"}
-        else:
-            return {"status": "error", "message": f"Error HTTP {r.status_code}: {r.text[:80]}"}
-    except _httpx.ConnectError:
-        return {"status": "error", "message": "❌ No se pudo conectar al servidor Evolution — verifica la URL"}
-    except Exception as e:
-        return {"status": "error", "message": f"Error: {str(e)[:80]}"}
 
 @app.post("/api/test/claude")
 async def test_claude():
@@ -172,33 +127,27 @@ async def test_claude():
 
 @app.post("/api/env")
 async def save_env_vars(data: dict = Body(...)):
-    """Guarda variables en DB (persistente) y en .env (local)."""
+    """Sobrescribe las variables en el archivo .env."""
     try:
-        # 1. Guardar en Base de Datos (Persistente en Railway)
+        lines = []
+        if os.path.exists(".env"):
+            with open(".env", "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        
+        # Eliminar líneas viejas de las variables que estamos editando
+        keys_to_update = data.keys()
+        new_lines = [l for l in lines if not any(l.startswith(f"{k}=") for k in keys_to_update)]
+        
+        # Añadir las nuevas
         for k, v in data.items():
-            await guardar_config_db(k, str(v))
+            new_lines.append(f"{k}={v}\n")
             
-        # 2. Intentar guardar en .env (solo para desarrollo local o si es permitido)
-        try:
-            lines = []
-            if os.path.exists(".env"):
-                with open(".env", "r", encoding="utf-8") as f:
-                    lines = f.readlines()
+        with open(".env", "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
             
-            keys_to_update = data.keys()
-            new_lines = [l for l in lines if not any(l.startswith(f"{k}=") for l in keys_to_update)]
-            for k, v in data.items():
-                new_lines.append(f"{k}={v}\n")
-                
-            with open(".env", "w", encoding="utf-8") as f:
-                f.writelines(new_lines)
-            load_dotenv(override=True)
-        except Exception as env_err:
-            logger.warning(f"No se pudo escribir en .env (normal en Railway): {env_err}")
-
-        return {"status": "ok", "message": "Configuración guardada en Base de Datos"}
+        load_dotenv(override=True) # Recargar en memoria
+        return {"status": "ok"}
     except Exception as e:
-        logger.error(f"Error guardando config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/config")
@@ -403,34 +352,12 @@ async def webhook_verificacion(request: Request):
     res = await proveedor.validar_webhook(request)
     return PlainTextResponse(str(res)) if res else {"status": "ok"}
 
-@app.post("/webhook/debug")
-async def webhook_debug(request: Request):
-    """Endpoint de diagnóstico: muestra exactamente lo que llegó del webhook."""
-    try:
-        body = await request.json()
-        logger.info(f"[DEBUG WEBHOOK] Payload recibido: {json.dumps(body, ensure_ascii=False)[:500]}")
-        return {"received": body, "provider": os.getenv("WHATSAPP_PROVIDER", "?"),
-                "evolution_url": bool(os.getenv("EVOLUTION_API_URL")),
-                "evolution_key": bool(os.getenv("EVOLUTION_API_KEY")),
-                "evolution_instance": os.getenv("EVOLUTION_INSTANCE_NAME", "?")}
-    except Exception as e:
-        return {"error": str(e), "raw": await request.body()}
-
 @app.post("/webhook")
 async def webhook_handler(request: Request):
-    # Cargar proveedor dinámicamente desde la Base de Datos
-    provider_name = await obtener_config_db("WHATSAPP_PROVIDER", "whapi")
-    proveedor_actual = obtener_proveedor(provider_name.lower())
-    
-    logger.info(f"[WEBHOOK] POST recibido - Proveedor DB: {provider_name}")
-    
-    mensajes = await proveedor_actual.parsear_webhook(request)
-    logger.info(f"[WEBHOOK] Mensajes parseados: {len(mensajes)}")
-    
+    mensajes = await proveedor.parsear_webhook(request)
     for msg in mensajes:
         if msg.es_propio or not msg.texto: continue
-        logger.info(f"[WEBHOOK] Procesando mensaje de {msg.telefono}: '{msg.texto[:60]}'")
-
+        
         # 1. Notificar al Admin en tiempo real
         await manager.broadcast({"type": "new_message", "phone": msg.telefono, "text": msg.texto, "author": "user"})
 
@@ -441,66 +368,22 @@ async def webhook_handler(request: Request):
         # 3. Respuesta inteligente (Texto + Multimedia)
         import re
         bloques = [b.strip() for b in respuesta.split("\n\n") if any(c.isalnum() for c in b)]
-        
-        # Cargar catálogo para disparadores de producto
-        catalog = {}
-        if os.path.exists("knowledge/catalog.json"):
-            try:
-                with open("knowledge/catalog.json", "r", encoding="utf-8") as f:
-                    catalog = json.load(f)
-            except: pass
-
         for bloque in bloques:
-            # 1. Detectar disparador de producto completo: [PRODUCTO: Nombre]
-            patron_prod = r"\[PRODUCTO:\s*(.*?)\]"
-            match_prod = re.search(patron_prod, bloque)
-            
-            if match_prod:
-                prod_name = match_prod.group(1).strip()
-                texto_limpio = re.sub(patron_prod, "", bloque).strip()
-                
-                # Enviar texto primero si queda algo
-                if texto_limpio:
-                    await proveedor.enviar_mensaje(msg.telefono, texto_limpio)
-                
-                # Buscar en catálogo (búsqueda flexible por nombre)
-                prod_data = catalog.get(prod_name)
-                if not prod_data:
-                    # Intento de búsqueda parcial
-                    for k in catalog:
-                        if prod_name.lower() in k.lower():
-                            prod_data = catalog[k]
-                            break
-                
-                if prod_data:
-                    # Enviar Imagen
-                    if prod_data.get("imagen"):
-                        await proveedor.enviar_imagen(msg.telefono, prod_data["imagen"], f"Foto de {prod_name}")
-                        await asyncio.sleep(0.5)
-                    # Enviar Video
-                    if prod_data.get("video"):
-                        await proveedor.enviar_video(msg.telefono, prod_data["video"], f"Video de {prod_name}")
-                        await asyncio.sleep(0.5)
-                    # Enviar PDF
-                    if prod_data.get("documento"):
-                        await proveedor.enviar_documento(msg.telefono, prod_data["documento"], f"Ficha_{prod_name}.pdf")
-                        await asyncio.sleep(0.5)
-                continue
+            # Detectar etiquetas multimedia: [IMAGEN:], [VIDEO:], [DOCUMENTO:], [AUDIO:]
+            patron = r"\[(IMAGEN|VIDEO|DOCUMENTO|AUDIO):\s*(https?://[^\s\]]+)\]"
+            match = re.search(patron, bloque)
 
-            # 2. Detectar etiquetas multimedia unitarias: [IMAGEN:url], [VIDEO:url], etc.
-            patron_media = r"\[(IMAGEN|VIDEO|DOCUMENTO|AUDIO):\s*(https?://[^\s\]]+)\]"
-            match_media = re.search(patron_media, bloque)
-
-            if match_media:
-                tipo = match_media.group(1)
-                url_media = match_media.group(2)
-                texto_restante = re.sub(patron_media, "", bloque).strip()
+            if match:
+                tipo = match.group(1)
+                url_media = match.group(2)
+                texto_restante = re.sub(patron, "", bloque).strip()
 
                 if tipo == "IMAGEN":
                     await proveedor.enviar_imagen(msg.telefono, url_media, texto_restante)
                 elif tipo == "VIDEO":
                     await proveedor.enviar_video(msg.telefono, url_media, texto_restante)
                 elif tipo == "DOCUMENTO":
+                    # Extraer nombre del archivo de la URL
                     nombre_archivo = url_media.split("/")[-1] or "documento"
                     await proveedor.enviar_documento(msg.telefono, url_media, nombre_archivo)
                 elif tipo == "AUDIO":
@@ -512,7 +395,7 @@ async def webhook_handler(request: Request):
 
             # Notificar al Panel Admin
             await manager.broadcast({"type": "new_message", "phone": msg.telefono, "text": bloque, "author": "assistant"})
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(1.5)
 
         await guardar_mensaje(msg.telefono, "user", msg.texto)
         await guardar_mensaje(msg.telefono, "assistant", respuesta)

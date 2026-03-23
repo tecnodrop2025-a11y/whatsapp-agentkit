@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,114 +8,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #3b82f6;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --accent: #60a5fa;
-            --success: #10b981;
-            --danger: #ef4444;
+            --primary: #3b82f6; --bg: #0f172a; --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc; --text-dim: #94a3b8; --accent: #60a5fa; --success: #10b981; --danger: #ef4444;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1rem;
-        }
-
-        h1 {
-            font-weight: 600;
-            font-size: 1.6rem;
-            background: linear-gradient(to right, #60a5fa, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 2rem;
-        }
-
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .nav-item {
-            padding: 1.1rem;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .nav-item:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: var(--primary);
-            color: var(--accent);
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-            border-color: transparent;
-        }
-
-        .main-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            padding: 2.2rem;
-            border-radius: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            min-height: 600px;
-        }
-
-        h2 {
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .section-box {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 2rem;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text-main); background-image: radial-gradient(circle at top right, #1e293b, #0f172a); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+        h1 { font-weight: 600; font-size: 1.6rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }
+        .sidebar { display: flex; flex-direction: column; gap: 0.8rem; }
+        .nav-item { padding: 1.1rem; border-radius: 14px; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 1rem; }
+        .nav-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); color: var(--accent); }
+        .nav-item.active { background: var(--primary); color: white; border-color: transparent; }
+        .main-card { background: var(--card-bg); backdrop-filter: blur(16px); padding: 2.2rem; border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); min-height: 600px; }
+        h2 { margin-bottom: 1.5rem; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 0.8rem; }
+        .section-box { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem; }
 
         /* CATALOG PREMIUM CARDS */
         .catalog-card-premium {
@@ -130,14 +37,12 @@
             flex-direction: column;
             position: relative;
         }
-
         .catalog-card-premium:hover {
             transform: translateY(-5px);
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
-
         .card-image-box {
             width: 100%;
             height: 160px;
@@ -145,26 +50,21 @@
             background: #0d1b2e;
             position: relative;
         }
-
         .card-image-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.5s ease;
         }
-
-        .catalog-card-premium:hover .card-image-box img {
-            transform: scale(1.1);
-        }
-
+        .catalog-card-premium:hover .card-image-box img { transform: scale(1.1); }
+        
         .no-image-placeholder {
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.1);
+            color: rgba(255,255,255,0.1);
         }
-
         .shopify-badge {
             position: absolute;
             top: 10px;
@@ -175,13 +75,9 @@
             border-radius: 8px;
             font-size: 0.8rem;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-
-        .card-content {
-            padding: 1.2rem;
-        }
-
+        .card-content { padding: 1.2rem; }
         .card-title {
             font-weight: 600;
             font-size: 0.95rem;
@@ -192,292 +88,77 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
         .card-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.8rem;
         }
-
-        .card-price {
-            color: #95d376;
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .card-stock {
-            color: var(--text-dim);
-            font-size: 0.75rem;
-        }
-
+        .card-price { color: #95d376; font-weight: 700; font-size: 1rem; }
+        .card-stock { color: var(--text-dim); font-size: 0.75rem; }
         .card-media-icons {
             display: flex;
             gap: 0.8rem;
             color: var(--text-dim);
             font-size: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255,255,255,0.05);
             padding-top: 0.8rem;
         }
+        .card-media-icons i:hover { color: var(--primary); }
 
-        .card-media-icons i:hover {
-            color: var(--primary);
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        select,
-        input,
-        textarea {
-            width: 100%;
-            padding: 0.9rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-            font-size: 0.9rem;
-        }
-
-        textarea {
-            font-family: monospace;
-            resize: vertical;
-            min-height: 350px;
-        }
-
-        .btn {
-            padding: 0.8rem 1.8rem;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .chat-container {
-            height: 480px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 0.7rem 1.1rem;
-            border-radius: 16px;
-            font-size: 0.9rem;
-        }
-
-        .msg-user {
-            align-self: flex-start;
-            background: #1e293b;
-        }
-
-        .msg-assistant {
-            align-self: flex-end;
-            background: var(--primary);
-        }
-
-        #toast {
-            position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--success);
-            color: white;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            transition: 0.5s;
-            z-index: 5000;
-        }
-
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        select, input, textarea { width: 100%; padding: 0.9rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; outline: none; transition: 0.3s; font-size: 0.9rem; }
+        textarea { font-family: monospace; resize: vertical; min-height: 350px; }
+        .btn { padding: 0.8rem 1.8rem; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 0.6rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .chat-container { height: 480px; background: rgba(0,0,0,0.3); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .message { max-width: 85%; padding: 0.7rem 1.1rem; border-radius: 16px; font-size: 0.9rem; }
+        .msg-user { align-self: flex-start; background: #1e293b; }
+        .msg-assistant { align-self: flex-end; background: var(--primary); }
+        #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--success); color: white; padding: 0.8rem 2rem; border-radius: 50px; transition: 0.5s; z-index: 5000; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
         /* TABS MODAL PRODUCTO */
-        .tab-nav {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 0.5rem;
-        }
+        .tab-nav { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
+        .tab-btn { background: none; border: none; color: var(--text-dim); padding: 0.6rem 1.2rem; cursor: pointer; font-weight: 600; border-radius: 12px; transition: 0.3s; font-size: 0.9rem; }
+        .tab-btn.active { background: rgba(129,140,248,0.15); color: #818cf8; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        input:read-only, textarea:read-only { background: rgba(255,255,255,0.02); color: var(--text-dim); cursor: not-allowed; border-color: transparent; }
 
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            padding: 0.6rem 1.2rem;
-            cursor: pointer;
-            font-weight: 600;
-            border-radius: 12px;
-            transition: 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .tab-btn.active {
-            background: rgba(129, 140, 248, 0.15);
-            color: #818cf8;
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        input:read-only,
-        textarea:read-only {
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-dim);
-            cursor: not-allowed;
-            border-color: transparent;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.4s;
-        }
-
-        .status-badge.idle {
-            background: rgba(255, 255, 255, 0.07);
-            color: var(--text-dim);
-        }
-
-        .status-badge.testing {
-            background: rgba(250, 204, 21, 0.15);
-            color: #fbbf24;
-        }
-
-        .status-badge.connected {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-
-        .status-badge.error {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .status-badge.connected .status-dot {
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        @keyframes pulse-dot {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
-        }
+        .hidden { display: none !important; }
+        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; transition: all 0.4s; }
+        .status-badge.idle { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+        .status-badge.testing { background: rgba(250,204,21,0.15); color: #fbbf24; }
+        .status-badge.connected { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-badge.error { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .status-badge.connected .status-dot { animation: pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header style="display:flex; justify-content:space-between; align-items:center;">
             <h1>Carla Bot — Centro de Control</h1>
             <div style="display:flex; align-items:center; gap:1.2rem;">
-                <div id="header-status-wa" class="status-badge idle"
-                    style="background:transparent; border:1px solid rgba(37,211,102,0.2);"><i
-                        class="fa-brands fa-whatsapp"></i> WhatsApp</div>
-                <div id="header-status-claude" class="status-badge idle"
-                    style="background:transparent; border:1px solid rgba(129,140,248,0.2);"><i
-                        class="fa-solid fa-brain"></i> Claude</div>
-                <div id="header-status-shopify" class="status-badge idle"
-                    style="background:transparent; border:1px solid rgba(149,211,118,0.2);"><i
-                        class="fa-brands fa-shopify"></i> Shopify</div>
-                <div id="ws-status"
-                    style="color: var(--success); font-weight: 700; font-size: 0.75rem; letter-spacing:0.05rem;">●
-                    CONECTADO</div>
+                <div id="header-status-wa" class="status-badge idle" style="background:transparent; border:1px solid rgba(37,211,102,0.2);"><i class="fa-brands fa-whatsapp"></i> WhatsApp</div>
+                <div id="header-status-claude" class="status-badge idle" style="background:transparent; border:1px solid rgba(129,140,248,0.2);"><i class="fa-solid fa-brain"></i> Claude</div>
+                <div id="header-status-shopify" class="status-badge idle" style="background:transparent; border:1px solid rgba(149,211,118,0.2);"><i class="fa-brands fa-shopify"></i> Shopify</div>
+                <div id="ws-status" style="color: var(--success); font-weight: 700; font-size: 0.75rem; letter-spacing:0.05rem;">● CONECTADO</div>
             </div>
         </header>
         <div class="dashboard">
             <div class="sidebar">
-                <div class="nav-item active" id="nav-live" onclick="showSection('live')"><i
-                        class="fa-solid fa-bolt"></i> Chat en Vivo</div>
-                <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i
-                        class="fa-solid fa-plug"></i> Integraciones</div>
-                <div class="nav-item" id="nav-personality" onclick="showSection('personality')"><i
-                        class="fa-solid fa-brain"></i> Personalidad</div>
-                <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')"><i
-                        class="fa-solid fa-database"></i> Conocimiento</div>
-                <div class="nav-item" id="nav-catalog" onclick="showSection('catalog')"><i
-                        class="fa-solid fa-box-open"></i> Catálogo Multimedia</div>
+                <div class="nav-item active" id="nav-live" onclick="showSection('live')"><i class="fa-solid fa-bolt"></i> Chat en Vivo</div>
+                <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i class="fa-solid fa-plug"></i> Integraciones</div>
+                <div class="nav-item" id="nav-personality" onclick="showSection('personality')"><i class="fa-solid fa-brain"></i> Personalidad</div>
+                <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')"><i class="fa-solid fa-database"></i> Conocimiento</div>
+                <div class="nav-item" id="nav-catalog" onclick="showSection('catalog')"><i class="fa-solid fa-box-open"></i> Catálogo Multimedia</div>
             </div>
             <main class="main-card">
                 <div id="sec-connection" style="display: none;">
@@ -485,12 +166,9 @@
 
                     <!-- WHATSAPP -->
                     <div class="section-box">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-                            <h3 style="font-size:1rem;"><i class="fa-brands fa-whatsapp" style="color:#25D366"></i>
-                                Canal de WhatsApp</h3>
-                            <span id="wa-status" class="status-badge idle"><span class="status-dot"></span> Sin
-                                probar</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-brands fa-whatsapp" style="color:#25D366"></i> Canal de WhatsApp</h3>
+                            <span id="wa-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
                         </div>
                         <div class="form-group">
                             <label>Proveedor</label>
@@ -498,235 +176,142 @@
                                 <option value="whapi">Whapi.cloud</option>
                                 <option value="meta">Meta Cloud API</option>
                                 <option value="textmebot">TextMeBot.com</option>
-                                <option value="evolution">Evolution API v2 (Self-hosted)</option>
                             </select>
                         </div>
-                        <div id="fields-whapi">
-                            <div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token"
-                                    placeholder="wh_..."></div>
-                        </div>
-                        <div id="fields-meta" style="display:none">
-                            <div class="form-group"><label>Meta Admin Token</label><input type="text" id="meta-token">
-                            </div>
+                        <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token" placeholder="wh_..."></div></div>
+                        <div id="fields-meta" class="hidden">
+                            <div class="form-group"><label>Meta Admin Token</label><input type="text" id="meta-token"></div>
                             <div class="form-group"><label>Phone ID</label><input type="text" id="meta-phone"></div>
                             <div class="form-group"><label>WABA ID</label><input type="text" id="meta-waba"></div>
                         </div>
-                        <div id="fields-textmebot" style="display:none">
-                            <div class="form-group"><label>TextMeBot API Key</label><input type="text"
-                                    id="textmebot-key"></div>
-                        </div>
-                        <div id="fields-evolution" style="display:none">
-                            <div class="form-group"><label><i class="fa-solid fa-server"></i> URL del Servidor Evolution</label><input type="text" id="evolution-url" placeholder="https://tu-servidor.com"></div>
-                            <div class="form-group">
-                                <label><i class="fa-solid fa-key"></i> Token de la Instancia</label>
-                                <input type="password" id="evolution-key" placeholder="El Token que pusiste al crear la instancia (ej: 123456)">
-                                <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--text-dim);">💡 Este es el <strong>Token</strong> que configuraste al crear la instancia en Evolution Manager, no el Global API Key.</p>
-                            </div>
-                            <div class="form-group"><label><i class="fa-solid fa-mobile-screen"></i> Nombre de la Instancia</label><input type="text" id="evolution-instance" placeholder="El nombre exacto que le diste (ej: PRUEBAS)"></div>
-                        </div>
-                        <button class="btn" id="btn-test-wa" onclick="testWA()"
-                            style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.3);">
+                        <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
+                        <button class="btn" id="btn-test-wa" onclick="testWA()" style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.3);">
                             <i class="fa-solid fa-satellite-dish"></i> Probar Canal
                         </button>
                     </div>
 
                     <!-- CLAUDE -->
                     <div class="section-box">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-                            <h3 style="font-size:1rem;"><i class="fa-solid fa-brain" style="color:#818cf8"></i> Cerebro
-                                Claude (IA)</h3>
-                            <span id="claude-status" class="status-badge idle"><span class="status-dot"></span> Sin
-                                probar</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-solid fa-brain" style="color:#818cf8"></i> Cerebro Claude (IA)</h3>
+                            <span id="claude-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
                         </div>
-                        <div class="form-group"><label>Anthropic API Key</label><input type="text" id="anthropic-key"
-                                placeholder="sk-ant-api03-..."></div>
-                        <button class="btn" id="btn-test-claude" onclick="testClaude()"
-                            style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">
+                        <div class="form-group"><label>Anthropic API Key</label><input type="text" id="anthropic-key" placeholder="sk-ant-api03-..."></div>
+                        <button class="btn" id="btn-test-claude" onclick="testClaude()" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">
                             <i class="fa-solid fa-satellite-dish"></i> Probar Conexión
                         </button>
                     </div>
 
                     <!-- SHOPIFY -->
                     <div class="section-box">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-                            <h3 style="font-size:1rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i>
-                                Shopify</h3>
-                            <span id="shopify-cfg-status" class="status-badge idle"><span class="status-dot"></span> Sin
-                                probar</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i> Shopify</h3>
+                            <span id="shopify-cfg-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                            <div class="form-group"><label>URL Tienda (.myshopify.com)</label><input type="text"
-                                    id="shopify-store" placeholder="mi-tienda.myshopify.com"></div>
-                            <div class="form-group"><label>App URL (Railway)</label><input type="text"
-                                    id="shopify-appurl" placeholder="https://tu-app.railway.app"></div>
-                            <div class="form-group"><label>Client ID</label><input type="text" id="shopify-clientid"
-                                    placeholder="95acd..."></div>
-                            <div class="form-group"><label>Client Secret</label><input type="text" id="shopify-secret"
-                                    placeholder="shpss_..."></div>
+                            <div class="form-group"><label>URL Tienda (.myshopify.com)</label><input type="text" id="shopify-store" placeholder="mi-tienda.myshopify.com"></div>
+                            <div class="form-group"><label>App URL (Railway)</label><input type="text" id="shopify-appurl" placeholder="https://tu-app.railway.app"></div>
+                            <div class="form-group"><label>Client ID</label><input type="text" id="shopify-clientid" placeholder="95acd..."></div>
+                            <div class="form-group"><label>Client Secret</label><input type="text" id="shopify-secret" placeholder="shpss_..."></div>
                         </div>
                         <div style="margin: 0.5rem 0 1rem; display: flex; align-items: center; gap: 0.8rem;">
-                            <input type="checkbox" id="shopify-import-stock"
-                                style="width: auto; height: 18px; accent-color: #95d376; cursor: pointer;">
-                            <label for="shopify-import-stock"
-                                style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.9rem; color: white;">🔋
-                                Sincronizar Stock Real de Shopify</label>
+                            <input type="checkbox" id="shopify-import-stock" style="width: auto; height: 18px; accent-color: #95d376; cursor: pointer;">
+                            <label for="shopify-import-stock" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.9rem; color: white;">🔋 Sincronizar Stock Real de Shopify</label>
                         </div>
                         <div style="display:flex; gap:1rem; margin-top:0.5rem; flex-wrap:wrap;">
-                            <button class="btn" id="btn-test-shopify" onclick="testShopifyCfg()"
-                                style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
+                            <button class="btn" id="btn-test-shopify" onclick="testShopifyCfg()" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
                                 <i class="fa-solid fa-plug"></i> Probar Conexión
                             </button>
-                            <button class="btn" onclick="connectShopify()"
-                                style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
+                            <button class="btn" onclick="connectShopify()" style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
                                 <i class="fa-brands fa-shopify"></i> Conectar / Instalar App
                             </button>
                         </div>
-                        <p style="margin-top:1rem; font-size:0.75rem; color:var(--text-dim);">Recuerda registrar en
-                            Shopify Dev Dashboard la URL de redirección:<br>
-                            <code style="color:#95d376;">[App URL]/shopify/callback</code>
-                        </p>
+                        <p style="margin-top:1rem; font-size:0.75rem; color:var(--text-dim);">Recuerda registrar en Shopify Dev Dashboard la URL de redirección:<br>
+                        <code style="color:#95d376;">[App URL]/shopify/callback</code></p>
                     </div>
 
-                    <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i>
-                        Guardar Todo</button>
+                    <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Guardar Todo</button>
                 </div>
                 <div id="sec-live">
                     <h2>Monitor Realtime</h2>
                     <div class="chat-container">
                         <div id="chat-messages" class="chat-messages"></div>
-                        <div class="chat-input" id="chat-controls" style="display: none;"><input type="text"
-                                id="manual-msg" placeholder="Responder..."><button class="btn btn-primary"
-                                onclick="sendManual()"><i class="fa-solid fa-paper-plane"></i></button></div>
+                        <div class="chat-input" id="chat-controls" style="display: none;"><input type="text" id="manual-msg" placeholder="Responder..."><button class="btn btn-primary" onclick="sendManual()"><i class="fa-solid fa-paper-plane"></i></button></div>
                     </div>
                 </div>
-                <div id="sec-personality" style="display: none;">
-                    <h2>Prompts Maestros</h2><textarea id="prompt-editor" spellcheck="false"></textarea><button
-                        class="btn btn-primary" onclick="saveConfig()" style="margin-top:1rem;">Aplicar Cambios</button>
-                </div>
-                <div id="sec-knowledge" style="display: none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-                        <h2>Biblioteca</h2><button class="btn btn-primary"
-                            style="background:transparent; border:1px solid var(--primary);" onclick="createNewFile()">+
-                            Nuevo</button>
-                    </div>
-                    <div id="knowledge-grid"
-                        style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1.2rem;">
-                    </div>
-                    <div id="file-editor-container" class="hidden"
-                        style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:2rem;">
-                        <h3 id="editing-filename">Archivo</h3><textarea id="file-editor"></textarea><button
-                            class="btn btn-primary" onclick="saveFile()" style="margin-top:1rem;">Guardar
-                            Cambios</button>
-                    </div>
-                </div>
+                <div id="sec-personality" style="display: none;"><h2>Prompts Maestros</h2><textarea id="prompt-editor" spellcheck="false"></textarea><button class="btn btn-primary" onclick="saveConfig()" style="margin-top:1rem;">Aplicar Cambios</button></div>
+                <div id="sec-knowledge" style="display: none;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;"><h2>Biblioteca</h2><button class="btn btn-primary" style="background:transparent; border:1px solid var(--primary);" onclick="createNewFile()">+ Nuevo</button></div><div id="knowledge-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1.2rem;"></div><div id="file-editor-container" class="hidden" style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:2rem;"><h3 id="editing-filename">Archivo</h3><textarea id="file-editor"></textarea><button class="btn btn-primary" onclick="saveFile()" style="margin-top:1rem;">Guardar Cambios</button></div></div>
                 <!-- SECCIÓN CATÁLOGO MULTIMEDIA -->
                 <div id="sec-catalog" style="display: none;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
                         <h2><i class="fa-solid fa-box-open"></i> Catálogo Multimedia</h2>
                         <div style="display:flex; align-items:center; gap:0.8rem;">
-                            <span id="shopify-status" class="status-badge idle"><span class="status-dot"></span>
-                                Shopify</span>
-                            <button id="btn-shopify-test" class="btn" onclick="testShopify()"
-                                style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
+                            <span id="shopify-status" class="status-badge idle"><span class="status-dot"></span> Shopify</span>
+                            <button id="btn-shopify-test" class="btn" onclick="testShopify()" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
                                 <i class="fa-solid fa-plug"></i> Probar
                             </button>
-                            <button id="btn-shopify-import" class="btn" onclick="importFromShopify()"
-                                style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
+                            <button id="btn-shopify-import" class="btn" onclick="importFromShopify()" style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.5rem 1rem; font-size:0.8rem;">
                                 <i class="fa-solid fa-cloud-arrow-down"></i> Importar Productos
                             </button>
-                            <button class="btn btn-primary" onclick="openProductForm()"
-                                style="padding:0.5rem 1rem; font-size:0.8rem;">+ Nuevo</button>
+                            <button class="btn btn-primary" onclick="openProductForm()" style="padding:0.5rem 1rem; font-size:0.8rem;">+ Nuevo</button>
                         </div>
                     </div>
-                    <div id="catalog-grid"
-                        style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem;">
+                    <div id="catalog-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem;">
                         <!-- Los productos se cargan aquí -->
                     </div>
-
+                    
                     <!-- NEW PRODUCT MODAL WITH TABS -->
-                    <div id="product-modal" class="hidden"
-                        style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:2000; overflow-y:auto; padding:2rem;">
-                        <div
-                            style="max-width:800px; margin:0 auto; background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:32px; padding:2.5rem; position:relative; box-shadow:0 30px 60px -12px rgba(0,0,0,0.5);">
-                            <div
-                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <div id="product-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:2000; overflow-y:auto; padding:2rem;">
+                        <div style="max-width:800px; margin:0 auto; background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:32px; padding:2.5rem; position:relative; box-shadow:0 30px 60px -12px rgba(0,0,0,0.5);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
                                 <div>
-                                    <h2 id="product-form-title" style="margin:0; font-size:1.6rem; color:white;">Detalle
-                                        del Producto</h2>
-                                    <p style="margin:0.2rem 0 0; color:var(--text-dim); font-size:0.9rem;">Gestiona la
-                                        información y archivos del bot</p>
+                                    <h2 id="product-form-title" style="margin:0; font-size:1.6rem; color:white;">Detalle del Producto</h2>
+                                    <p style="margin:0.2rem 0 0; color:var(--text-dim); font-size:0.9rem;">Gestiona la información y archivos del bot</p>
                                 </div>
                                 <div style="display:flex; gap:0.8rem; align-items:center;">
-                                    <button id="btn-delete-product" class="btn"
-                                        style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.2);"
-                                        onclick="deleteProduct()"><i class="fa-solid fa-trash"></i> Eliminar</button>
-                                    <button onclick="closeProductModal()"
-                                        style="background:rgba(255,255,255,0.05); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer;">✕</button>
+                                    <button id="btn-delete-product" class="btn" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.2);" onclick="deleteProduct()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                                    <button onclick="closeProductModal()" style="background:rgba(255,255,255,0.05); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer;">✕</button>
                                 </div>
                             </div>
 
                             <!-- Tabs Nav -->
                             <div class="tab-nav">
-                                <button class="tab-btn active" onclick="switchTab('tab-info')"><i
-                                        class="fa-solid fa-circle-info"></i> Información Comercial</button>
-                                <button class="tab-btn" onclick="switchTab('tab-multimedia')"><i
-                                        class="fa-solid fa-photo-film"></i> Envíos Multimedia</button>
+                                <button class="tab-btn active" onclick="switchTab('tab-info')"><i class="fa-solid fa-circle-info"></i> Información Comercial</button>
+                                <button class="tab-btn" onclick="switchTab('tab-multimedia')"><i class="fa-solid fa-photo-film"></i> Envíos Multimedia</button>
                             </div>
 
                             <!-- Tab 1: Info -->
                             <div id="tab-info" class="tab-content active">
-                                <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text"
-                                        id="prod-name" placeholder="Ej: Parches AlivioNatural"></div>
-                                <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave /
-                                        Alias</label><input type="text" id="prod-keys"
-                                        placeholder="Separa con comas..."></div>
+                                <div class="form-group"><label>Nombre del Producto / Categoría</label><input type="text" id="prod-name" placeholder="Ej: Parches AlivioNatural"></div>
+                                <div class="form-group"><label><i class="fa-solid fa-tags"></i> Palabras Clave / Alias</label><input type="text" id="prod-keys" placeholder="Separa con comas..."></div>
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
-                                    <div class="form-group"><label><i class="fa-solid fa-tag"></i> Precio</label><input
-                                            type="text" id="prod-price" placeholder="0"></div>
+                                    <div class="form-group"><label><i class="fa-solid fa-tag"></i> Precio</label><input type="text" id="prod-price" placeholder="0"></div>
                                     <div class="form-group">
                                         <label><i class="fa-solid fa-boxes-stacked"></i> Stock Disponible</label>
                                         <input type="number" id="prod-stock" placeholder="0">
-                                        <small id="stock-hint"
-                                            style="font-size:0.7rem; color:#95d376; display:none; margin-top:0.3rem;">Sincronizado
-                                            vía Shopify</small>
+                                        <small id="stock-hint" style="font-size:0.7rem; color:#95d376; display:none; margin-top:0.3rem;">Sincronizado vía Shopify</small>
                                     </div>
                                 </div>
-                                <div class="form-group"><label><i class="fa-solid fa-align-left"></i> Descripción de
-                                        Venta</label><textarea id="prod-desc"
-                                        style="min-height:150px; font-family:inherit; font-size:0.9rem;"
-                                        placeholder="Escribe los beneficios o detalles del producto..."></textarea>
-                                </div>
+                                <div class="form-group"><label><i class="fa-solid fa-align-left"></i> Descripción de Venta</label><textarea id="prod-desc" style="min-height:150px; font-family:inherit; font-size:0.9rem;" placeholder="Escribe los beneficios o detalles del producto..."></textarea></div>
                             </div>
 
                             <!-- Tab 2: Multimedia -->
                             <div id="tab-multimedia" class="tab-content">
                                 <div class="form-group">
                                     <label><i class="fa-solid fa-image"></i> Link de Imagen de Portada</label>
-                                    <input type="text" id="prod-img" placeholder="https://..."
-                                        oninput="updatePreviewImg()">
-                                    <div
-                                        style="margin-top:1rem; width:100px; height:100px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
-                                        <img id="modal-img-preview"
-                                            style="max-width:100%; max-height:100%; display:none;">
-                                        <i id="modal-img-icon" class="fa-solid fa-image fa-2x"
-                                            style="color:var(--text-dim)"></i>
+                                    <input type="text" id="prod-img" placeholder="https://..." oninput="updatePreviewImg()">
+                                    <div style="margin-top:1rem; width:100px; height:100px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
+                                        <img id="modal-img-preview" style="max-width:100%; max-height:100%; display:none;">
+                                        <i id="modal-img-icon" class="fa-solid fa-image fa-2x" style="color:var(--text-dim)"></i>
                                     </div>
                                 </div>
-                                <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video Demo
-                                        (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
-                                <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Ficha PDF /
-                                        Catálogo</label><input type="text" id="prod-doc" placeholder="https://...">
-                                </div>
+                                <div class="form-group"><label><i class="fa-solid fa-video"></i> Link de Video Demo (mp4)</label><input type="text" id="prod-video" placeholder="https://..."></div>
+                                <div class="form-group"><label><i class="fa-solid fa-file-pdf"></i> Link de Ficha PDF / Catálogo</label><input type="text" id="prod-doc" placeholder="https://..."></div>
                             </div>
 
-                            <div
-                                style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2.5rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.05);">
-                                <button class="btn" onclick="closeProductModal()"
-                                    style="background:rgba(255,255,255,0.05);">Cerrar</button>
-                                <button class="btn btn-success" id="btn-save-product" onclick="saveProduct()"><i
-                                        class="fa-solid fa-check"></i> Aplicar Cambios</button>
+                            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2.5rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.05);">
+                                <button class="btn" onclick="closeProductModal()" style="background:rgba(255,255,255,0.05);">Cerrar</button>
+                                <button class="btn btn-success" id="btn-save-product" onclick="saveProduct()"><i class="fa-solid fa-check"></i> Aplicar Cambios</button>
                             </div>
                         </div>
                     </div>
@@ -737,50 +322,34 @@
     <div id="toast">Éxito 🚀</div>
 
     <!-- SHOPIFY PRODUCT PICKER MODAL -->
-    <div id="shopify-modal"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:1000; overflow-y:auto; padding:2rem;">
-        <div
-            style="max-width:900px; margin:0 auto; background:#131929; border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2rem;">
+    <div id="shopify-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:1000; overflow-y:auto; padding:2rem;">
+        <div style="max-width:900px; margin:0 auto; background:#131929; border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                 <div>
-                    <h2 style="margin:0; font-size:1.4rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i>
-                        Importar desde Shopify</h2>
-                    <p style="margin:0.3rem 0 0; color:var(--text-dim); font-size:0.85rem;">Selecciona los productos que
-                        quieres agregar al catálogo</p>
+                    <h2 style="margin:0; font-size:1.4rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i> Importar desde Shopify</h2>
+                    <p style="margin:0.3rem 0 0; color:var(--text-dim); font-size:0.85rem;">Selecciona los productos que quieres agregar al catálogo</p>
                 </div>
-                <button onclick="closeShopifyModal()"
-                    style="background:rgba(255,255,255,0.05); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">✕</button>
+                <button onclick="closeShopifyModal()" style="background:rgba(255,255,255,0.05); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">✕</button>
             </div>
             <!-- Barra de búsqueda + acciones -->
             <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
-                <input id="shopify-search" type="text" placeholder="🔍 Buscar producto..."
-                    oninput="filterShopifyProducts()"
-                    style="flex:1; min-width:200px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:0.7rem 1rem; border-radius:12px; font-size:0.9rem;">
-                <button onclick="selectAllShopify(true)"
-                    style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">✅
-                    Todos</button>
-                <button onclick="selectAllShopify(false)"
-                    style="background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">⬜
-                    Ninguno</button>
+                <input id="shopify-search" type="text" placeholder="🔍 Buscar producto..." oninput="filterShopifyProducts()" style="flex:1; min-width:200px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:0.7rem 1rem; border-radius:12px; font-size:0.9rem;">
+                <button onclick="selectAllShopify(true)" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">✅ Todos</button>
+                <button onclick="selectAllShopify(false)" style="background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">⬜ Ninguno</button>
             </div>
             <!-- Grid de productos -->
-            <div id="shopify-picker-grid"
-                style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; max-height:50vh; overflow-y:auto; padding-right:0.5rem;">
+            <div id="shopify-picker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; max-height:50vh; overflow-y:auto; padding-right:0.5rem;">
                 <div style="text-align:center; padding:3rem; color:var(--text-dim); grid-column:1/-1;">
                     <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
                     <p>Cargando productos de Shopify...</p>
                 </div>
             </div>
             <!-- Footer -->
-            <div
-                style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08);">
-                <span id="shopify-selection-count" style="color:var(--text-dim); font-size:0.85rem;">0 productos
-                    seleccionados</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08);">
+                <span id="shopify-selection-count" style="color:var(--text-dim); font-size:0.85rem;">0 productos seleccionados</span>
                 <div style="display:flex; gap:1rem;">
-                    <button onclick="closeShopifyModal()"
-                        style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer;">Cancelar</button>
-                    <button id="btn-confirm-import" onclick="confirmShopifyImport()"
-                        style="background:linear-gradient(135deg,#95d376,#5ba83d); color:#0a1628; border:none; padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer; font-weight:700;">
+                    <button onclick="closeShopifyModal()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer;">Cancelar</button>
+                    <button id="btn-confirm-import" onclick="confirmShopifyImport()" style="background:linear-gradient(135deg,#95d376,#5ba83d); color:#0a1628; border:none; padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer; font-weight:700;">
                         <i class="fa-solid fa-cloud-arrow-down"></i> Importar Seleccionados
                     </button>
                 </div>
@@ -794,17 +363,16 @@
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById('nav-' + name).classList.add('active');
             ['live', 'connection', 'personality', 'knowledge', 'catalog'].forEach(s => document.getElementById('sec-' + s).style.display = (s === name ? 'block' : 'none'));
-            if (name === 'connection') loadEnv();
-            if (name === 'knowledge') loadKnowledge();
-            if (name === 'personality') loadConfig();
-            if (name === 'catalog') loadCatalog();
+            if(name === 'connection') loadEnv();
+            if(name === 'knowledge') loadKnowledge();
+            if(name === 'personality') loadConfig();
+            if(name === 'catalog') loadCatalog();
         }
         function toggleProvFields() {
             const p = document.getElementById('prov-selector').value;
             document.getElementById('fields-whapi').style.display = p === 'whapi' ? 'block' : 'none';
             document.getElementById('fields-meta').style.display = p === 'meta' ? 'block' : 'none';
             document.getElementById('fields-textmebot').style.display = p === 'textmebot' ? 'block' : 'none';
-            document.getElementById('fields-evolution').style.display = p === 'evolution' ? 'block' : 'none'; // Added for Evolution
         }
         async function loadEnv() {
             const res = await fetch('/api/env'); const d = await res.json();
@@ -814,9 +382,6 @@
             document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || '';
             document.getElementById('meta-waba').value = d.META_WABA_ID || '';
             document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || '';
-            document.getElementById('evolution-url').value = d.EVOLUTION_API_URL || ''; // Added for Evolution
-            document.getElementById('evolution-key').value = d.EVOLUTION_API_KEY || ''; // Added for Evolution
-            document.getElementById('evolution-instance').value = d.EVOLUTION_INSTANCE_NAME || ''; // Added for Evolution
             document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || '';
             document.getElementById('shopify-store').value = d.SHOPIFY_STORE_URL || '';
             document.getElementById('shopify-appurl').value = d.APP_URL || '';
@@ -833,9 +398,6 @@
                 META_PHONE_NUMBER_ID: document.getElementById('meta-phone').value,
                 META_WABA_ID: document.getElementById('meta-waba').value,
                 TEXTMEBOT_API_KEY: document.getElementById('textmebot-key').value,
-                EVOLUTION_API_URL: document.getElementById('evolution-url').value, // Added for Evolution
-                EVOLUTION_API_KEY: document.getElementById('evolution-key').value, // Added for Evolution
-                EVOLUTION_INSTANCE_NAME: document.getElementById('evolution-instance').value, // Added for Evolution
                 ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value,
                 SHOPIFY_STORE_URL: document.getElementById('shopify-store').value,
                 APP_URL: document.getElementById('shopify-appurl').value,
@@ -843,10 +405,10 @@
                 SHOPIFY_CLIENT_SECRET: document.getElementById('shopify-secret').value,
                 SHOPIFY_IMPORT_STOCK: document.getElementById('shopify-import-stock').checked ? 'true' : 'false'
             };
-            await fetch('/api/env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+            await fetch('/api/env', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
             showToast('Configuración Guardada ✅');
         }
-        async function testLink() { const res = await fetch('/api/test', { method: 'POST' }); const d = await res.json(); showToast(d.message); }
+        async function testLink() { const res = await fetch('/api/test', {method:'POST'}); const d = await res.json(); showToast(d.message); }
         function updateHeaderStatus(id, className, text) {
             const el = document.getElementById('header-status-' + id);
             if (!el) return;
@@ -859,61 +421,21 @@
         }
 
         async function testWA() {
-            const provider = document.getElementById('prov-selector').value;
-            if (provider === 'evolution') { testEvolution(); return; }
-
             const badge = document.getElementById('wa-status');
             const btn = document.getElementById('btn-test-wa');
             badge.className = 'status-badge testing';
             badge.innerHTML = '<span class="status-dot"></span> Probando...';
             btn.disabled = true;
-            const res = await fetch('/api/test', { method: 'POST' });
+            const res = await fetch('/api/test', {method:'POST'});
             const d = await res.json();
             const statusClass = d.status === 'ok' ? 'connected' : 'error';
             const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
-
+            
             badge.className = 'status-badge ' + statusClass;
             badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
             updateHeaderStatus('wa', statusClass, statusText);
-
+            
             showToast(d.message);
-            btn.disabled = false;
-        }
-
-        async function testEvolution() {
-            const badge = document.getElementById('wa-status');
-            const btn = document.getElementById('btn-test-wa');
-            badge.className = 'status-badge testing';
-            badge.innerHTML = '<span class="status-dot"></span> Probando Evolution...';
-            btn.disabled = true;
-
-            // Leer los valores ACTUALES del formulario (no depender de las vars de entorno)
-            const payload = {
-                url: document.getElementById('evolution-url').value.trim(),
-                key: document.getElementById('evolution-key').value.trim(),
-                instance: document.getElementById('evolution-instance').value.trim()
-            };
-
-            try {
-                const res = await fetch('/api/test/evolution', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const d = await res.json();
-                const statusClass = d.status === 'ok' ? 'connected' : 'error';
-                const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
-
-                badge.className = 'status-badge ' + statusClass;
-                badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
-                updateHeaderStatus('wa', statusClass, statusText);
-                showToast(d.message);
-            } catch (e) {
-                badge.className = 'status-badge error';
-                badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
-                updateHeaderStatus('wa', 'error', 'Error');
-                showToast('No se pudo alcanzar el servidor Evolution');
-            }
             btn.disabled = false;
         }
 
@@ -923,7 +445,7 @@
             badge.className = 'status-badge testing';
             badge.innerHTML = '<span class="status-dot"></span> Probando...';
             btn.disabled = true;
-            const res = await fetch('/api/shopify/test', { method: 'POST' });
+            const res = await fetch('/api/shopify/test', {method:'POST'});
             const d = await res.json();
             const statusClass = d.status === 'ok' ? 'connected' : 'error';
             const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
@@ -931,10 +453,10 @@
             badge.className = 'status-badge ' + statusClass;
             badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
             updateHeaderStatus('shopify', statusClass, statusText);
-
+            
             // Sincronizar también el del catálogo si existe
             const catBadge = document.getElementById('shopify-status');
-            if (catBadge) {
+            if(catBadge) {
                 catBadge.className = 'status-badge ' + statusClass;
                 catBadge.innerHTML = `<span class="status-dot"></span> Shopify`;
             }
@@ -954,17 +476,17 @@
             badge.innerHTML = '<span class="status-dot"></span> Probando...';
             btn.disabled = true;
             try {
-                const res = await fetch('/api/test/claude', { method: 'POST' });
+                const res = await fetch('/api/test/claude', {method: 'POST'});
                 const d = await res.json();
                 const statusClass = d.status === 'ok' ? 'connected' : 'error';
                 const statusText = d.status === 'ok' ? 'Conectado' : 'Error';
-
+                
                 badge.className = 'status-badge ' + statusClass;
                 badge.innerHTML = `<span class="status-dot"></span> ${statusText}`;
                 updateHeaderStatus('claude', statusClass, statusText);
 
                 showToast(d.message);
-            } catch (e) {
+            } catch(e) {
                 badge.className = 'status-badge error';
                 badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
                 updateHeaderStatus('claude', 'error', 'Error');
@@ -972,13 +494,13 @@
             btn.disabled = false;
         }
 
-        async function loadKnowledge() { const res = await fetch('/api/knowledge'); const d = await res.json(); const grid = document.getElementById('knowledge-grid'); grid.innerHTML = ""; d.files.forEach(f => { const c = document.createElement('div'); c.style.padding = "1.5rem"; c.style.background = "rgba(255,255,255,0.03)"; c.style.borderRadius = "20px"; c.style.cursor = "pointer"; c.innerHTML = `📄 ${f}`; c.onclick = () => openFile(f); grid.appendChild(c); }); }
-        async function openFile(n) { currentFile = n; const res = await fetch(`/api/knowledge/${n}`); const d = await res.json(); document.getElementById('editing-filename').innerText = n; document.getElementById('file-editor').value = d.content; document.getElementById('file-editor-container').classList.remove('hidden'); }
-        async function saveFile() { await fetch(`/api/knowledge/${currentFile}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: document.getElementById('file-editor').value }) }); showToast("Guardado"); }
-        function createNewFile() { const n = prompt("Nombre:"); if (n) { currentFile = n; openFile(n); } }
+        async function loadKnowledge() { const res = await fetch('/api/knowledge'); const d = await res.json(); const grid = document.getElementById('knowledge-grid'); grid.innerHTML = ""; d.files.forEach(f => { const c = document.createElement('div'); c.style.padding="1.5rem"; c.style.background="rgba(255,255,255,0.03)"; c.style.borderRadius="20px"; c.style.cursor="pointer"; c.innerHTML=`📄 ${f}`; c.onclick=()=>openFile(f); grid.appendChild(c); }); }
+        async function openFile(n) { currentFile=n; const res=await fetch(`/api/knowledge/${n}`); const d=await res.json(); document.getElementById('editing-filename').innerText=n; document.getElementById('file-editor').value=d.content; document.getElementById('file-editor-container').classList.remove('hidden'); }
+        async function saveFile() { await fetch(`/api/knowledge/${currentFile}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content: document.getElementById('file-editor').value}) }); showToast("Guardado"); }
+        function createNewFile() { const n = prompt("Nombre:"); if(n) { currentFile=n; openFile(n); } }
         async function loadConfig() { const res = await fetch('/api/config'); const d = await res.json(); document.getElementById('prompt-editor').value = JSON.stringify(d, null, 2); }
-        async function saveConfig() { await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: document.getElementById('prompt-editor').value }); showToast("Personalidad Guardada"); }
-
+        async function saveConfig() { await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: document.getElementById('prompt-editor').value }); showToast("Personalidad Guardada"); }
+        
         // --- SHOPIFY ---
         async function testShopify() {
             const badge = document.getElementById('shopify-status');
@@ -987,7 +509,7 @@
             badge.innerHTML = '<span class="status-dot"></span> Probando...';
             btn.disabled = true;
             try {
-                const res = await fetch('/api/shopify/test', { method: 'POST' });
+                const res = await fetch('/api/shopify/test', {method:'POST'});
                 const d = await res.json();
                 if (d.status === 'ok') {
                     badge.className = 'status-badge connected';
@@ -998,7 +520,7 @@
                     badge.innerHTML = '<span class="status-dot"></span> Error';
                     showToast(d.message);
                 }
-            } catch (e) {
+            } catch(e) {
                 badge.className = 'status-badge error';
                 badge.innerHTML = '<span class="status-dot"></span> Sin respuesta';
             }
@@ -1028,7 +550,7 @@
                         <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
                         <p>${d.message || 'Error al conectar con Shopify'}</p></div>`;
                 }
-            } catch (e) {
+            } catch(e) {
                 document.getElementById('shopify-picker-grid').innerHTML =
                     `<div style="text-align:center;padding:3rem;color:#f87171;grid-column:1/-1">Error de red. Verifica la conexión con Shopify.</div>`;
             }
@@ -1047,9 +569,9 @@
                         <input type="checkbox" id="sprod-${p.id}" value="${p.id}" onchange="updateSelectionCount()" style="position:absolute; top:10px; right:10px; width:18px; height:18px; accent-color:#95d376; cursor:pointer; z-index:2;">
                         <div style="width:100%; height:140px; overflow:hidden; background:#0d1b2e;">
                             ${p.image
-                    ? `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover; display:block;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'height:100%;display:flex;align-items:center;justify-content:center;color:#334155;\'><i class=\'fa-solid fa-image fa-2x\'></i></div>'">`
-                    : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#334155;"><i class="fa-solid fa-box fa-2x"></i></div>`
-                }
+                                ? `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover; display:block;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'height:100%;display:flex;align-items:center;justify-content:center;color:#334155;\'><i class=\'fa-solid fa-image fa-2x\'></i></div>'">`
+                                : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#334155;"><i class="fa-solid fa-box fa-2x"></i></div>`
+                            }
                         </div>
                         <div style="padding:0.8rem;">
                             <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.3rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
@@ -1091,7 +613,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importando...';
             const res = await fetch('/api/shopify/import', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ ids: selected })
             });
             const d = await res.json();
@@ -1100,7 +622,7 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Importar Seleccionados';
         }
-
+        
         // --- LÓGICA CATÁLOGO MULTIMEDIA ---
         let fullCatalog = {};
         async function loadCatalog() {
@@ -1111,17 +633,17 @@
                 const card = document.createElement('div');
                 card.className = "catalog-card-premium";
                 card.onclick = () => openProductForm(name);
-
+                
                 // Formatear precio si existe
                 const priceStr = p.precio ? `$${parseFloat(p.precio).toLocaleString('es-CL')}` : '';
                 const stockStr = p.stock !== undefined ? `Stock: ${p.stock}` : '';
 
                 card.innerHTML = `
                     <div class="card-image-box">
-                        ${p.imagen
-                        ? `<img src="${p.imagen}" loading="lazy">`
-                        : `<div class="no-image-placeholder"><i class="fa-solid fa-box-open fa-2x"></i></div>`
-                    }
+                        ${p.imagen 
+                            ? `<img src="${p.imagen}" loading="lazy">` 
+                            : `<div class="no-image-placeholder"><i class="fa-solid fa-box-open fa-2x"></i></div>`
+                        }
                         ${p.shopify_id ? '<div class="shopify-badge"><i class="fa-brands fa-shopify"></i></div>' : ''}
                     </div>
                     <div class="card-content">
@@ -1143,7 +665,7 @@
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             switchTab('tab-info');
-
+            
             const p = name ? fullCatalog[name] : { keywords: "", imagen: "", video: "", documento: "", descripcion: "", precio: "", stock: 0 };
             document.getElementById('prod-name').value = name;
             document.getElementById('prod-keys').value = p.keywords || "";
@@ -1153,12 +675,12 @@
             document.getElementById('prod-desc').value = p.descripcion || "";
             document.getElementById('prod-price').value = p.precio || "";
             document.getElementById('prod-stock').value = p.stock || 0;
-
+            
             // Lógica de Stock Bloqueado
             const stockInput = document.getElementById('prod-stock');
             const stockHint = document.getElementById('stock-hint');
             const isSyncEnabled = document.getElementById('shopify-import-stock').checked;
-
+            
             if (isSyncEnabled && p.shopify_id) {
                 stockInput.readOnly = true;
                 stockHint.style.display = 'block';
@@ -1169,7 +691,7 @@
 
             document.getElementById('product-form-title').innerText = name ? "Editar Ficha Técnica" : "Nueva Ficha de Producto";
             document.getElementById('btn-delete-product').style.display = name ? 'flex' : 'none';
-
+            
             updatePreviewImg();
             currentProductSelected = name;
         }
@@ -1187,7 +709,7 @@
             const url = document.getElementById('prod-img').value;
             const img = document.getElementById('modal-img-preview');
             const icon = document.getElementById('modal-img-icon');
-            if (url) {
+            if(url) {
                 img.src = url; img.style.display = 'block'; icon.style.display = 'none';
             } else {
                 img.style.display = 'none'; icon.style.display = 'block';
@@ -1195,7 +717,7 @@
         }
         async function saveProduct() {
             const name = document.getElementById('prod-name').value;
-            if (!name) return alert("Nombre requerido");
+            if(!name) return alert("Nombre requerido");
             const btn = document.getElementById('btn-save-product');
             btn.disabled = true;
 
@@ -1210,26 +732,25 @@
                 precio: document.getElementById('prod-price').value,
                 stock: parseInt(document.getElementById('prod-stock').value) || 0
             };
-            await fetch('/api/catalog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullCatalog) });
+            await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
             showToast("Producto Guardado");
             loadCatalog();
             closeProductModal();
             btn.disabled = false;
         }
         async function deleteProduct() {
-            if (!confirm("¿Borrar este producto?")) return;
+            if(!confirm("¿Borrar este producto?")) return;
             delete fullCatalog[currentProductSelected];
-            await fetch('/api/catalog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullCatalog) });
+            await fetch('/api/catalog', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullCatalog) });
             loadCatalog();
             closeProductModal();
         }
 
-        function initWS() { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/admin`); ws.onmessage = (e) => { const d = JSON.parse(e.data); if (d.type === 'new_message') renderMsg(d); }; }
-        function renderMsg(d) { const b = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = `message msg-${d.author}`; div.innerHTML = `<strong>${d.phone}</strong><br>${d.text}`; b.appendChild(div); b.scrollTop = b.scrollHeight; currentPhone = d.phone; document.getElementById('chat-controls').style.display = 'flex'; }
-        async function sendManual() { const i = document.getElementById('manual-msg'); await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: currentPhone, text: i.value }) }); i.value = ""; }
-        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        function initWS() { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/admin`); ws.onmessage = (e) => { const d = JSON.parse(e.data); if(d.type==='new_message') renderMsg(d); }; }
+        function renderMsg(d) { const b = document.getElementById('chat-messages'); const div = document.createElement('div'); div.className = `message msg-${d.author}`; div.innerHTML=`<strong>${d.phone}</strong><br>${d.text}`; b.appendChild(div); b.scrollTop = b.scrollHeight; currentPhone=d.phone; document.getElementById('chat-controls').style.display='flex'; }
+        async function sendManual() { const i = document.getElementById('manual-msg'); await fetch('/api/send', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({to:currentPhone, text:i.value})}); i.value=""; }
+        function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
         initWS(); showSection('live');
     </script>
 </body>
-
 </html>
