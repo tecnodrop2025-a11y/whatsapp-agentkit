@@ -15,7 +15,6 @@ from agent.brain import generar_respuesta, cargar_config_prompts
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers.whapi import ProveedorWhapi
 from agent.providers.meta import ProveedorMeta
-from agent.providers.textmebot import ProveedorTextMeBot
 from agent.shopify_client import ShopifyClient
 
 load_dotenv()
@@ -25,7 +24,6 @@ def obtener_proveedor():
     """Función de fábrica para instanciar el proveedor configurado."""
     provider_name = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
     if provider_name == "meta": return ProveedorMeta()
-    if provider_name == "textmebot": return ProveedorTextMeBot()
     return ProveedorWhapi()
 
 # Logger

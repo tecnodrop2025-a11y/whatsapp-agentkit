@@ -175,7 +175,6 @@
                             <select id="prov-selector" onchange="toggleProvFields()">
                                 <option value="whapi">Whapi.cloud</option>
                                 <option value="meta">Meta Cloud API</option>
-                                <option value="textmebot">TextMeBot.com</option>
                             </select>
                         </div>
                         <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token" placeholder="wh_..."></div></div>
@@ -184,7 +183,6 @@
                             <div class="form-group"><label>Phone ID</label><input type="text" id="meta-phone"></div>
                             <div class="form-group"><label>WABA ID</label><input type="text" id="meta-waba"></div>
                         </div>
-                        <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
                         <button class="btn" id="btn-test-wa" onclick="testWA()" style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.3);">
                             <i class="fa-solid fa-satellite-dish"></i> Probar Canal
                         </button>
@@ -372,7 +370,6 @@
             const p = document.getElementById('prov-selector').value;
             document.getElementById('fields-whapi').style.display = p === 'whapi' ? 'block' : 'none';
             document.getElementById('fields-meta').style.display = p === 'meta' ? 'block' : 'none';
-            document.getElementById('fields-textmebot').style.display = p === 'textmebot' ? 'block' : 'none';
         }
         async function loadEnv() {
             const res = await fetch('/api/env'); const d = await res.json();
@@ -381,7 +378,6 @@
             document.getElementById('meta-token').value = d.META_ACCESS_TOKEN || '';
             document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || '';
             document.getElementById('meta-waba').value = d.META_WABA_ID || '';
-            document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || '';
             document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || '';
             document.getElementById('shopify-store').value = d.SHOPIFY_STORE_URL || '';
             document.getElementById('shopify-appurl').value = d.APP_URL || '';
@@ -397,7 +393,6 @@
                 META_ACCESS_TOKEN: document.getElementById('meta-token').value,
                 META_PHONE_NUMBER_ID: document.getElementById('meta-phone').value,
                 META_WABA_ID: document.getElementById('meta-waba').value,
-                TEXTMEBOT_API_KEY: document.getElementById('textmebot-key').value,
                 ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value,
                 SHOPIFY_STORE_URL: document.getElementById('shopify-store').value,
                 APP_URL: document.getElementById('shopify-appurl').value,
