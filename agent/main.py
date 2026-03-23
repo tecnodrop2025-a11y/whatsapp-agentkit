@@ -395,12 +395,34 @@ async def webhook_verificacion(request: Request):
     res = await proveedor.validar_webhook(request)
     return PlainTextResponse(str(res)) if res else {"status": "ok"}
 
+@app.post("/webhook/debug")
+async def webhook_debug(request: Request):
+    """Endpoint de diagnóstico: muestra exactamente lo que llegó del webhook."""
+    try:
+        body = await request.json()
+        logger.info(f"[DEBUG WEBHOOK] Payload recibido: {json.dumps(body, ensure_ascii=False)[:500]}")
+        return {"received": body, "provider": os.getenv("WHATSAPP_PROVIDER", "?"),
+                "evolution_url": bool(os.getenv("EVOLUTION_API_URL")),
+                "evolution_key": bool(os.getenv("EVOLUTION_API_KEY")),
+                "evolution_instance": os.getenv("EVOLUTION_INSTANCE_NAME", "?")}
+    except Exception as e:
+        return {"error": str(e), "raw": await request.body()}
+
 @app.post("/webhook")
 async def webhook_handler(request: Request):
-    mensajes = await proveedor.parsear_webhook(request)
+    # Recargar .env y proveedor dinámicamente para tomar cambios sin reiniciar
+    load_dotenv(override=True)
+    proveedor_actual = obtener_proveedor()
+    
+    logger.info(f"[WEBHOOK] POST recibido - Proveedor: {os.getenv('WHATSAPP_PROVIDER','?')}")
+    
+    mensajes = await proveedor_actual.parsear_webhook(request)
+    logger.info(f"[WEBHOOK] Mensajes parseados: {len(mensajes)}")
+    
     for msg in mensajes:
         if msg.es_propio or not msg.texto: continue
-        
+        logger.info(f"[WEBHOOK] Procesando mensaje de {msg.telefono}: '{msg.texto[:60]}'")
+
         # 1. Notificar al Admin en tiempo real
         await manager.broadcast({"type": "new_message", "phone": msg.telefono, "text": msg.texto, "author": "user"})
 

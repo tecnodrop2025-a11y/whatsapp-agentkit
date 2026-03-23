@@ -16,15 +16,26 @@ class ProveedorEvolution(ProveedorWhatsApp):
         self.instance = os.getenv("EVOLUTION_INSTANCE_NAME", "")
 
     async def parsear_webhook(self, request: Request) -> list[MensajeEntrante]:
-        """Parsea el payload de Evolution API v2 (event: messages.upsert)."""
+        """Parsea el payload de Evolution API v2 (event: messages.upsert o MESSAGES_UPSERT)."""
         try:
             body = await request.json()
-            event = body.get("event")
-            data = body.get("data", {})
+            event = (body.get("event") or "").lower()
+            instance = body.get("instance")
             
-            if event != "messages.upsert":
+            logger.info(f"[EVOLUTION] Webhook recibido: Evento={event} - Instancia={instance}")
+            
+            # Evolution v2 usa 'messages.upsert' o 'MESSAGES_UPSERT'
+            if event not in ["messages.upsert", "messages_upsert"]:
                 return []
 
+            data = body.get("data", {})
+            if not data: return []
+
+            # A veces Evolution v2 envía una lista en data
+            if isinstance(data, list):
+                data = data[0] if len(data) > 0 else {}
+
+            message_obj = data.get("message", {})
             key = data.get("key", {})
             from_me = key.get("fromMe", False)
             remote_jid = key.get("remoteJid", "")
@@ -35,15 +46,30 @@ class ProveedorEvolution(ProveedorWhatsApp):
             # Extraer número limpio
             telefono = remote_jid.split("@")[0]
             
-            # Extraer texto del mensaje (soporta conversation y extendedTextMessage)
-            message = data.get("message", {})
+            # Extraer texto del mensaje (soporta múltiples tipos de Baileys/Evolution)
             texto = ""
-            if "conversation" in message:
-                texto = message["conversation"]
-            elif "extendedTextMessage" in message:
-                texto = message["extendedTextMessage"].get("text", "")
+            if "conversation" in message_obj:
+                texto = message_obj["conversation"]
+            elif "extendedTextMessage" in message_obj:
+                texto = message_obj["extendedTextMessage"].get("text", "")
+            elif "imageMessage" in message_obj:
+                texto = message_obj["imageMessage"].get("caption", "")
+            elif "videoMessage" in message_obj:
+                texto = message_obj["videoMessage"].get("caption", "")
+            elif "buttonsResponseMessage" in message_obj:
+                texto = message_obj["buttonsResponseMessage"].get("selectedButtonId", "")
+            elif "listResponseMessage" in message_obj:
+                texto = message_obj["listResponseMessage"].get("singleSelectReply", {}).get("selectedRowId", "")
             
-            if not texto: return []
+            # Si el texto sigue vacío, intentamos buscar en el body del mensaje de tipo texto
+            if not texto and data.get("type") == "conversation":
+                texto = data.get("content", "")
+
+            logger.info(f"[EVOLUTION] Mensaje detectado de {telefono}: '{texto[:50]}'")
+
+            if not texto:
+                logger.debug(f"[EVOLUTION] Mensaje sin texto o tipo no soportado: {message_obj.keys()}")
+                return []
 
             return [MensajeEntrante(
                 telefono=telefono,
