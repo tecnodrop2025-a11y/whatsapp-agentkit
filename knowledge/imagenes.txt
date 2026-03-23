@@ -1,8 +1,0 @@
-## CATÁLOGO DE IMÁGENES OFICIALES
-Utiliza estas URLs exactas cuando el cliente pida ver fotos de los productos.
-
-- IMAGEN PARCHES ALIVIONATURAL (60 UNIDADES): https://ventasensantiago.com/cdn/shop/files/usosos.png
-- IMAGEN PARCHES ALIVIONATURAL (120 UNIDADES): https://tu-sitio.com/foto-120-parches.jpg
-- IMAGEN RESULTADOS / TESTIMONIOS: https://tu-sitio.com/testimonios.jpg
-
-Nota para Carla: Para enviar una imagen, usa el formato [IMAGEN: URL] seguido o precedido de tu texto explicativo.

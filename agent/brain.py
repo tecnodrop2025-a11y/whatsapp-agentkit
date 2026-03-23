@@ -47,7 +47,7 @@ async def generar_respuesta(prompt_usuario, historial):
     messages.append({"role": "user", "content": prompt_usuario})
     
     try:
-        # Petición a la IA (claude-sonnet-4-6 — modelo activo en esta cuenta)
+        # Petición a la IA (claude-sonnet-4-6)
         response = await client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=1024,
