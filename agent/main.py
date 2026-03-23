@@ -77,7 +77,11 @@ async def get_env_vars():
         "META_PHONE_NUMBER_ID": os.getenv("META_PHONE_NUMBER_ID", ""),
         "META_WABA_ID": os.getenv("META_WABA_ID", ""),
         "TEXTMEBOT_API_KEY": os.getenv("TEXTMEBOT_API_KEY", ""),
-        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", "")
+        "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
+        "SHOPIFY_STORE_URL": os.getenv("SHOPIFY_STORE_URL", ""),
+        "SHOPIFY_CLIENT_ID": os.getenv("SHOPIFY_CLIENT_ID", ""),
+        "SHOPIFY_CLIENT_SECRET": os.getenv("SHOPIFY_CLIENT_SECRET", ""),
+        "APP_URL": os.getenv("APP_URL", "")
     }
 
 @app.post("/api/test")

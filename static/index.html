@@ -58,16 +58,21 @@
         <div class="dashboard">
             <div class="sidebar">
                 <div class="nav-item active" id="nav-live" onclick="showSection('live')"><i class="fa-solid fa-bolt"></i> Chat en Vivo</div>
-                <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i class="fa-solid fa-plug"></i> Conexión WhatsApp</div>
+                <div class="nav-item" id="nav-connection" onclick="showSection('connection')"><i class="fa-solid fa-plug"></i> Integraciones</div>
                 <div class="nav-item" id="nav-personality" onclick="showSection('personality')"><i class="fa-solid fa-brain"></i> Personalidad</div>
                 <div class="nav-item" id="nav-knowledge" onclick="showSection('knowledge')"><i class="fa-solid fa-database"></i> Conocimiento</div>
                 <div class="nav-item" id="nav-catalog" onclick="showSection('catalog')"><i class="fa-solid fa-box-open"></i> Catálogo Multimedia</div>
             </div>
             <main class="main-card">
                 <div id="sec-connection" style="display: none;">
-                    <h2>Servicios y Conectividad</h2>
+                    <h2><i class="fa-solid fa-plug"></i> Integraciones</h2>
+
+                    <!-- WHATSAPP -->
                     <div class="section-box">
-                        <h3 style="margin-bottom:1.2rem; font-size:1rem;"><i class="fa-brands fa-whatsapp"></i> Canal de WhatsApp</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-brands fa-whatsapp" style="color:#25D366"></i> Canal de WhatsApp</h3>
+                            <span id="wa-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
+                        </div>
                         <div class="form-group">
                             <label>Proveedor</label>
                             <select id="prov-selector" onchange="toggleProvFields()">
@@ -76,26 +81,55 @@
                                 <option value="textmebot">TextMeBot.com</option>
                             </select>
                         </div>
-                        <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token"></div></div>
+                        <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token" placeholder="wh_..."></div></div>
                         <div id="fields-meta" class="hidden">
                             <div class="form-group"><label>Meta Admin Token</label><input type="text" id="meta-token"></div>
                             <div class="form-group"><label>Phone ID</label><input type="text" id="meta-phone"></div>
                             <div class="form-group"><label>WABA ID</label><input type="text" id="meta-waba"></div>
                         </div>
                         <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
+                        <button class="btn" id="btn-test-wa" onclick="testWA()" style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.3);">
+                            <i class="fa-solid fa-satellite-dish"></i> Probar Canal
+                        </button>
                     </div>
+
+                    <!-- CLAUDE -->
                     <div class="section-box">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-                            <h3 style="font-size:1rem;"><i class="fa-solid fa-brain"></i> Cerebro Claude</h3>
+                            <h3 style="font-size:1rem;"><i class="fa-solid fa-brain" style="color:#818cf8"></i> Cerebro Claude (IA)</h3>
                             <span id="claude-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
                         </div>
-                        <div class="form-group"><label>Claude API Key</label><input type="text" id="anthropic-key" placeholder="sk-ant-api03-..."></div>
+                        <div class="form-group"><label>Anthropic API Key</label><input type="text" id="anthropic-key" placeholder="sk-ant-api03-..."></div>
                         <button class="btn" id="btn-test-claude" onclick="testClaude()" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">
                             <i class="fa-solid fa-satellite-dish"></i> Probar Conexión
                         </button>
                     </div>
+
+                    <!-- SHOPIFY -->
+                    <div class="section-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                            <h3 style="font-size:1rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i> Shopify</h3>
+                            <span id="shopify-cfg-status" class="status-badge idle"><span class="status-dot"></span> Sin probar</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                            <div class="form-group"><label>URL Tienda (.myshopify.com)</label><input type="text" id="shopify-store" placeholder="mi-tienda.myshopify.com"></div>
+                            <div class="form-group"><label>App URL (Railway)</label><input type="text" id="shopify-appurl" placeholder="https://tu-app.railway.app"></div>
+                            <div class="form-group"><label>Client ID</label><input type="text" id="shopify-clientid" placeholder="95acd..."></div>
+                            <div class="form-group"><label>Client Secret</label><input type="text" id="shopify-secret" placeholder="shpss_..."></div>
+                        </div>
+                        <div style="display:flex; gap:1rem; margin-top:0.5rem; flex-wrap:wrap;">
+                            <button class="btn" id="btn-test-shopify" onclick="testShopifyCfg()" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
+                                <i class="fa-solid fa-plug"></i> Probar Conexión
+                            </button>
+                            <button class="btn" onclick="connectShopify()" style="background:rgba(149,211,118,0.15); color:#95d376; border:1px solid rgba(149,211,118,0.3);">
+                                <i class="fa-brands fa-shopify"></i> Conectar / Instalar App
+                            </button>
+                        </div>
+                        <p style="margin-top:1rem; font-size:0.75rem; color:var(--text-dim);">Recuerda registrar en Shopify Dev Dashboard la URL de redirección:<br>
+                        <code style="color:#95d376;">[App URL]/shopify/callback</code></p>
+                    </div>
+
                     <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Guardar Todo</button>
-                    <button class="btn btn-success" onclick="testLink()" style="margin-left:1rem;"><i class="fa-solid fa-vial"></i> Test</button>
                 </div>
                 <div id="sec-live">
                     <h2>Monitor Realtime</h2>
@@ -167,13 +201,17 @@
         }
         async function loadEnv() {
             const res = await fetch('/api/env'); const d = await res.json();
-            document.getElementById('prov-selector').value = d.WHATSAPP_PROVIDER;
-            document.getElementById('whapi-token').value = d.WHAPI_TOKEN || "";
-            document.getElementById('meta-token').value = d.META_ACCESS_TOKEN || "";
-            document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || "";
-            document.getElementById('meta-waba').value = d.META_WABA_ID || "";
-            document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || "";
-            document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || "";
+            document.getElementById('prov-selector').value = d.WHATSAPP_PROVIDER || 'whapi';
+            document.getElementById('whapi-token').value = d.WHAPI_TOKEN || '';
+            document.getElementById('meta-token').value = d.META_ACCESS_TOKEN || '';
+            document.getElementById('meta-phone').value = d.META_PHONE_NUMBER_ID || '';
+            document.getElementById('meta-waba').value = d.META_WABA_ID || '';
+            document.getElementById('textmebot-key').value = d.TEXTMEBOT_API_KEY || '';
+            document.getElementById('anthropic-key').value = d.ANTHROPIC_API_KEY || '';
+            document.getElementById('shopify-store').value = d.SHOPIFY_STORE_URL || '';
+            document.getElementById('shopify-appurl').value = d.APP_URL || '';
+            document.getElementById('shopify-clientid').value = d.SHOPIFY_CLIENT_ID || '';
+            document.getElementById('shopify-secret').value = d.SHOPIFY_CLIENT_SECRET || '';
             toggleProvFields();
         }
         async function saveSettings() {
@@ -184,12 +222,46 @@
                 META_PHONE_NUMBER_ID: document.getElementById('meta-phone').value,
                 META_WABA_ID: document.getElementById('meta-waba').value,
                 TEXTMEBOT_API_KEY: document.getElementById('textmebot-key').value,
-                ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value
+                ANTHROPIC_API_KEY: document.getElementById('anthropic-key').value,
+                SHOPIFY_STORE_URL: document.getElementById('shopify-store').value,
+                APP_URL: document.getElementById('shopify-appurl').value,
+                SHOPIFY_CLIENT_ID: document.getElementById('shopify-clientid').value,
+                SHOPIFY_CLIENT_SECRET: document.getElementById('shopify-secret').value
             };
             await fetch('/api/env', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
-            showToast("Configuración Guardada");
+            showToast('Configuración Guardada ✅');
         }
         async function testLink() { const res = await fetch('/api/test', {method:'POST'}); const d = await res.json(); showToast(d.message); }
+        async function testWA() {
+            const badge = document.getElementById('wa-status');
+            const btn = document.getElementById('btn-test-wa');
+            badge.className = 'status-badge testing';
+            badge.innerHTML = '<span class="status-dot"></span> Probando...';
+            btn.disabled = true;
+            const res = await fetch('/api/test', {method:'POST'});
+            const d = await res.json();
+            badge.className = d.status === 'ok' ? 'status-badge connected' : 'status-badge error';
+            badge.innerHTML = `<span class="status-dot"></span> ${d.status === 'ok' ? 'Conectado' : 'Error'}`;
+            showToast(d.message);
+            btn.disabled = false;
+        }
+        async function testShopifyCfg() {
+            const badge = document.getElementById('shopify-cfg-status');
+            const btn = document.getElementById('btn-test-shopify');
+            badge.className = 'status-badge testing';
+            badge.innerHTML = '<span class="status-dot"></span> Probando...';
+            btn.disabled = true;
+            const res = await fetch('/api/shopify/test', {method:'POST'});
+            const d = await res.json();
+            badge.className = d.status === 'ok' ? 'status-badge connected' : 'status-badge error';
+            badge.innerHTML = `<span class="status-dot"></span> ${d.status === 'ok' ? 'Conectado' : 'Error'}`;
+            showToast(d.message);
+            btn.disabled = false;
+        }
+        function connectShopify() {
+            const appUrl = document.getElementById('shopify-appurl').value || window.location.origin;
+            window.open(`${appUrl}/shopify/install`, '_blank');
+        }
         async function testClaude() {
             const badge = document.getElementById('claude-status');
             const btn = document.getElementById('btn-test-claude');
