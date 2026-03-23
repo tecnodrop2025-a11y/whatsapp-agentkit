@@ -1,116 +1,130 @@
-# agent/main.py — Servidor FastAPI + Webhook de WhatsApp
-# Generado por AgentKit
-
-"""
-Servidor principal del agente de WhatsApp.
-Funciona con cualquier proveedor (Whapi, Meta, Twilio) gracias a la capa de providers.
-"""
-
+# agent/main.py — Servidor FastAPI + Webhook + Admin Panel
 import os
 import logging
+import yaml
+import json
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi import FastAPI, Request, HTTPException, Body
+from fastapi.responses import PlainTextResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
-from agent.brain import generar_respuesta
+from agent.brain import generar_respuesta, cargar_config_prompts
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers import obtener_proveedor
 
 load_dotenv()
 
-# Configuración de logging según entorno
+# Configuración de logging
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 log_level = logging.DEBUG if ENVIRONMENT == "development" else logging.INFO
 logging.basicConfig(level=log_level)
 logger = logging.getLogger("agentkit")
 
-# Proveedor de WhatsApp (se configura en .env con WHATSAPP_PROVIDER)
 proveedor = obtener_proveedor()
 PORT = int(os.getenv("PORT", 8000))
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Inicializa la base de datos al arrancar el servidor."""
     await inicializar_db()
-    logger.info("Base de datos inicializada")
-    logger.info(f"Servidor AgentKit corriendo en puerto {PORT}")
-    logger.info(f"Proveedor de WhatsApp: {proveedor.__class__.__name__}")
+    logger.info("Sistema listo")
     yield
 
+app = FastAPI(title="Carla Bot Admin", lifespan=lifespan)
 
-app = FastAPI(
-    title="AgentKit — WhatsApp AI Agent",
-    version="1.0.0",
-    lifespan=lifespan
-)
+# --- ENDPOINTS DEL PANEL ADMINISTRATIVO ---
+
+@app.get("/api/config")
+async def get_config():
+    """Obtiene la configuración actual de prompts.yaml."""
+    return cargar_config_prompts()
+
+@app.post("/api/config")
+async def save_config(new_config: dict = Body(...)):
+    """Guarda la nueva configuración en prompts.yaml."""
+    try:
+        with open("config/prompts.yaml", "w", encoding="utf-8") as f:
+            yaml.dump(new_config, f, allow_unicode=True)
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/knowledge")
+async def list_knowledge():
+    """Lista los archivos en la carpeta knowledge."""
+    files = []
+    folder = "knowledge"
+    if os.path.exists(folder):
+        for f in os.listdir(folder):
+            if f.endswith(".txt"):
+                files.append(f)
+    return {"files": files}
+
+@app.get("/api/knowledge/{filename}")
+async def get_knowledge_file(filename: str):
+    """Lee el contenido de un archivo de conocimiento."""
+    path = os.path.join("knowledge", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404)
+    with open(path, "r", encoding="utf-8") as f:
+        return {"content": f.read()}
+
+@app.post("/api/knowledge/{filename}")
+async def save_knowledge_file(filename: str, data: dict = Body(...)):
+    """Guarda el contenido de un archivo de conocimiento."""
+    path = os.path.join("knowledge", filename)
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(data.get("content", ""))
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/")
-async def health_check():
-    """Endpoint de salud para Railway/monitoreo."""
-    return {"status": "ok", "service": "agentkit"}
-
+# --- WEBHOOK DE WHATSAPP ---
 
 @app.get("/webhook")
 async def webhook_verificacion(request: Request):
-    """Verificación GET del webhook (requerido por Meta Cloud API, no-op para otros)."""
     resultado = await proveedor.validar_webhook(request)
     if resultado is not None:
         return PlainTextResponse(str(resultado))
     return {"status": "ok"}
 
-
 @app.post("/webhook")
 async def webhook_handler(request: Request):
-    """
-    Recibe mensajes de WhatsApp via el proveedor configurado.
-    Procesa el mensaje, genera respuesta con Claude y la envía de vuelta.
-    """
     try:
-        # Parsear webhook — el proveedor normaliza el formato
         mensajes = await proveedor.parsear_webhook(request)
-
         for msg in mensajes:
-            # Ignorar mensajes propios o vacíos
-            if msg.es_propio or not msg.texto:
-                continue
-
-            logger.info(f"Mensaje de {msg.telefono}: {msg.texto}")
-
-            # Obtener historial ANTES de guardar el mensaje actual
-            # (brain.py agrega el mensaje actual, evitando duplicados)
+            if msg.es_propio or not msg.texto: continue
+            
             historial = await obtener_historial(msg.telefono)
-
-            # Procesar el mensaje con el cerebro
             respuesta = await generar_respuesta(msg.texto, historial)
 
-            # --- Lógica de envío humano: Separar mensajes por párrafos ---
+            # Lógica de envío humano con delay
             import asyncio
-            # Dividir por doble salto de línea
             bloques_raw = [b.strip() for b in respuesta.split("\n\n") if b.strip()]
-            
-            # Filtrar bloques que solo contengan símbolos como --- o --
             bloques = [b for b in bloques_raw if any(c.isalnum() for c in b)]
             
             for index, bloque in enumerate(bloques):
-                # Enviar cada bloque por separado
                 await proveedor.enviar_mensaje(msg.telefono, bloque)
-                
-                # Pausa natural para simular "Carla está escribiendo..."
                 if index < len(bloques) - 1:
-                    await asyncio.sleep(2.0)  # Pausa de 2 segundos
+                    await asyncio.sleep(2.0)
 
-            # Guardar mensaje del usuario Y respuesta del agente en memoria
             await guardar_mensaje(msg.telefono, "user", msg.texto)
-            # Guardar el mensaje del asistente en memoria (como un solo bloque para contexto coherente)
             await guardar_mensaje(msg.telefono, "assistant", respuesta)
 
-            logger.info(f"Respuesta a {msg.telefono}: {respuesta}")
-
         return {"status": "ok"}
-
     except Exception as e:
-        logger.error(f"Error en webhook: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error: {e}")
+        return {"status": "error"}
+
+# --- DASHBOARD FRONTEND ---
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_panel():
+    """Sirve la página principal del panel."""
+    with open("static/index.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+# Servir archivos estáticos (JS, CSS, Imágenes)
+if not os.path.exists("static"): os.makedirs("static")
+app.mount("/static", StaticFiles(directory="static"), name="static")

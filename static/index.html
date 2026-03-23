@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carla Bot — Centro de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #60a5fa;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 1rem;
+        }
+        h1 { font-weight: 600; font-size: 1.8rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .dashboard { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; }
+
+        .sidebar { display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-item { 
+            padding: 1rem; border-radius: 12px; cursor: pointer; transition: 0.3s;
+            background: rgba(255,255,255,0.03); border: 1px solid transparent;
+        }
+        .nav-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
+
+        .main-card { 
+            background: var(--card-bg); backdrop-filter: blur(12px); 
+            padding: 2rem; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        h2 { margin-bottom: 1.5rem; font-weight: 600; color: var(--accent); }
+        
+        textarea { 
+            width: 100%; height: 400px; background: rgba(0,0,0,0.2); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            color: #e2e8f0; padding: 1.5rem; font-family: monospace; font-size: 0.95rem;
+            resize: vertical; outline: none; transition: 0.3s;
+        }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
+
+        .btn { 
+            padding: 0.8rem 2rem; border-radius: 10px; border: none; 
+            font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 1rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
+
+        .status-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+
+        .knowledge-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .file-card { 
+            padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 16px; 
+            border: 1px solid rgba(255,255,255,0.05); cursor: pointer; text-align: center;
+            transition: 0.3s;
+        }
+        .file-card:hover { border-color: var(--primary); transform: scale(1.02); background: rgba(59,130,246,0.05); }
+        .file-card i { font-size: 2rem; display: block; margin-bottom: 0.5rem; color: var(--accent); }
+
+        #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--success); color: white; padding: 1rem 2rem; border-radius: 12px; transform: translateY(100px); transition: 0.5s; z-index: 1000; }
+        #toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1>Carla Bot Dashboard</h1>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Gestión de Asistente Virtual — Ventas en Santiago</p>
+            </div>
+            <span class="status-badge">● Sistema Online</span>
+        </header>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="showSection('personality')">🧠 Personalidad y Prompts</div>
+                <div class="nav-item" onclick="showSection('knowledge')">📚 Base de Conocimientos</div>
+                <div class="nav-item" onclick="showSection('logs')">💬 Historial de Chats</div>
+            </div>
+
+            <main class="main-card">
+                <!-- Sección Personalidad -->
+                <div id="sec-personality">
+                    <h2>Configuración Maestro (prompts.yaml)</h2>
+                    <p style="color: var(--text-dim); margin-bottom: 1rem;">Aquí puedes editar las instrucciones principales de Carla, sus horarios y sus reglas de comportamiento.</p>
+                    <textarea id="prompt-editor" placeholder="Cargando configuración..."></textarea>
+                    <button class="btn btn-primary" onclick="saveConfig()">Guardar Cambios</button>
+                </div>
+
+                <!-- Sección Conocimiento -->
+                <div id="sec-knowledge" style="display: none;">
+                    <h2>Archivos de Conocimiento (.txt)</h2>
+                    <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Haz clic en un archivo para editar su contenido.</p>
+                    <div id="knowledge-files" class="knowledge-list">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <div id="file-editor-container" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+                        <h3 id="editing-filename" style="margin-bottom: 1rem;">Editando archivo</h3>
+                        <textarea id="file-editor"></textarea>
+                        <button class="btn btn-primary" onclick="saveFile()">Guardar Archivo</button>
+                        <button class="btn" onclick="closeFileEditor()" style="background: transparent; color: var(--text-dim);">Cancelar</button>
+                    </div>
+                </div>
+
+                <!-- Sección Logs -->
+                <div id="sec-logs" style="display: none;">
+                    <h2>Historial de Conversaciones</h2>
+                    <p style="color: var(--text-dim);">Próximamente: Podrás ver las conversaciones guardadas de Carla aquí.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="toast">¡Guardado con éxito!</div>
+
+    <script>
+        let currentFile = "";
+
+        // Cambiar entre secciones
+        function showSection(name) {
+            document.querySelectorAll('.sidebar .nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('sec-personality').style.display = 'none';
+            document.getElementById('sec-knowledge').style.display = 'none';
+            document.getElementById('sec-logs').style.display = 'none';
+            
+            document.getElementById('sec-' + name).style.display = 'block';
+            
+            if(name === 'personality') loadConfig();
+            if(name === 'knowledge') loadKnowledge();
+        }
+
+        // Cargar prompts.yaml
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            document.getElementById('prompt-editor').value = JSON.stringify(data, null, 2);
+        }
+
+        // Guardar prompts.yaml
+        async function saveConfig() {
+            const content = document.getElementById('prompt-editor').value;
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: content
+                });
+                if(res.ok) showToast();
+            } catch(e) { alert("Error al guardar"); }
+        }
+
+        // Cargar lista de archivos de conocimiento
+        async function loadKnowledge() {
+            const res = await fetch('/api/knowledge');
+            const data = await res.json();
+            const container = document.getElementById('knowledge-files');
+            container.innerHTML = "";
+            
+            data.files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = "file-card";
+                div.innerHTML = `📄<br><strong>${file}</strong>`;
+                div.onclick = () => openFile(file);
+                container.appendChild(div);
+            });
+        }
+
+        // Abrir un archivo específico
+        async function openFile(name) {
+            currentFile = name;
+            const res = await fetch(`/api/knowledge/${name}`);
+            const data = await res.json();
+            
+            document.getElementById('editing-filename').innerText = "Editando: " + name;
+            document.getElementById('file-editor').value = data.content;
+            document.getElementById('file-editor-container').style.display = 'block';
+            document.getElementById('file-editor').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Guardar archivo
+        async function saveFile() {
+            const content = document.getElementById('file-editor').value;
+            const res = await fetch(`/api/knowledge/${currentFile}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            if(res.ok) {
+                showToast();
+                closeFileEditor();
+            }
+        }
+
+        function closeFileEditor() {
+            document.getElementById('file-editor-container').style.display = 'none';
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Carga inicial
+        window.onload = loadConfig;
+    </script>
+</body>
+</html>
