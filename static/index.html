@@ -182,6 +182,43 @@
         </div>
     </div>
     <div id="toast">Éxito 🚀</div>
+
+    <!-- SHOPIFY PRODUCT PICKER MODAL -->
+    <div id="shopify-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:1000; overflow-y:auto; padding:2rem;">
+        <div style="max-width:900px; margin:0 auto; background:#131929; border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <div>
+                    <h2 style="margin:0; font-size:1.4rem;"><i class="fa-brands fa-shopify" style="color:#95d376"></i> Importar desde Shopify</h2>
+                    <p style="margin:0.3rem 0 0; color:var(--text-dim); font-size:0.85rem;">Selecciona los productos que quieres agregar al catálogo</p>
+                </div>
+                <button onclick="closeShopifyModal()" style="background:rgba(255,255,255,0.05); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">✕</button>
+            </div>
+            <!-- Barra de búsqueda + acciones -->
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                <input id="shopify-search" type="text" placeholder="🔍 Buscar producto..." oninput="filterShopifyProducts()" style="flex:1; min-width:200px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:0.7rem 1rem; border-radius:12px; font-size:0.9rem;">
+                <button onclick="selectAllShopify(true)" style="background:rgba(149,211,118,0.1); color:#95d376; border:1px solid rgba(149,211,118,0.3); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">✅ Todos</button>
+                <button onclick="selectAllShopify(false)" style="background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1); padding:0.6rem 1rem; border-radius:12px; cursor:pointer; font-size:0.8rem;">⬜ Ninguno</button>
+            </div>
+            <!-- Grid de productos -->
+            <div id="shopify-picker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; max-height:50vh; overflow-y:auto; padding-right:0.5rem;">
+                <div style="text-align:center; padding:3rem; color:var(--text-dim); grid-column:1/-1;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p>Cargando productos de Shopify...</p>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08);">
+                <span id="shopify-selection-count" style="color:var(--text-dim); font-size:0.85rem;">0 productos seleccionados</span>
+                <div style="display:flex; gap:1rem;">
+                    <button onclick="closeShopifyModal()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer;">Cancelar</button>
+                    <button id="btn-confirm-import" onclick="confirmShopifyImport()" style="background:linear-gradient(135deg,#95d376,#5ba83d); color:#0a1628; border:none; padding:0.7rem 1.5rem; border-radius:12px; cursor:pointer; font-weight:700;">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Importar Seleccionados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentPhone = ""; let currentFile = ""; let ws;
         function showSection(name) {
@@ -318,20 +355,101 @@
             }
             btn.disabled = false;
         }
+        let shopifyAllProducts = [];
         async function importFromShopify() {
             const btn = document.getElementById('btn-shopify-import');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
+            document.getElementById('shopify-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            document.getElementById('shopify-picker-grid').innerHTML = `
+                <div style="text-align:center; padding:3rem; color:var(--text-dim); grid-column:1/-1;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p>Cargando productos de Shopify...</p>
+                </div>`;
             try {
-                const res = await fetch('/api/shopify/import', {method:'POST'});
+                const res = await fetch('/api/shopify/products');
                 const d = await res.json();
-                showToast(d.message);
-                if (d.status === 'ok') loadCatalog();
+                if (d.status === 'ok') {
+                    shopifyAllProducts = d.products;
+                    renderShopifyProducts(shopifyAllProducts);
+                } else {
+                    document.getElementById('shopify-picker-grid').innerHTML =
+                        `<div style="text-align:center;padding:3rem;color:#f87171;grid-column:1/-1">
+                        <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
+                        <p>${d.message || 'Error al conectar con Shopify'}</p></div>`;
+                }
             } catch(e) {
-                showToast('Error al importar desde Shopify');
+                document.getElementById('shopify-picker-grid').innerHTML =
+                    `<div style="text-align:center;padding:3rem;color:#f87171;grid-column:1/-1">Error de red. Verifica la conexión con Shopify.</div>`;
             }
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Importar Productos';
+        }
+        function renderShopifyProducts(list) {
+            const grid = document.getElementById('shopify-picker-grid');
+            if (!list.length) {
+                grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-dim);grid-column:1/-1">No se encontraron productos.</div>';
+                return;
+            }
+            grid.innerHTML = list.map(p => `
+                <label style="cursor:pointer;" for="sprod-${p.id}">
+                    <div class="shopify-card" id="card-${p.id}" style="background:rgba(255,255,255,0.03); border:2px solid rgba(255,255,255,0.06); border-radius:16px; overflow:hidden; transition:all 0.2s; position:relative;">
+                        <input type="checkbox" id="sprod-${p.id}" value="${p.id}" onchange="updateSelectionCount()" style="position:absolute; top:10px; right:10px; width:18px; height:18px; accent-color:#95d376; cursor:pointer; z-index:2;">
+                        <div style="width:100%; height:140px; overflow:hidden; background:#0d1b2e;">
+                            ${p.image
+                                ? `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover; display:block;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'height:100%;display:flex;align-items:center;justify-content:center;color:#334155;\'><i class=\'fa-solid fa-image fa-2x\'></i></div>'">`
+                                : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#334155;"><i class="fa-solid fa-box fa-2x"></i></div>`
+                            }
+                        </div>
+                        <div style="padding:0.8rem;">
+                            <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.3rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+                            <div style="font-size:0.8rem; color:#95d376; font-weight:700;">$${parseFloat(p.price).toLocaleString('es-CL')}</div>
+                            ${p.type ? `<div style="font-size:0.7rem; color:var(--text-dim); margin-top:0.2rem;">${p.type}</div>` : ''}
+                        </div>
+                    </div>
+                </label>`).join('');
+            updateSelectionCount();
+        }
+        function filterShopifyProducts() {
+            const q = document.getElementById('shopify-search').value.toLowerCase();
+            const filtered = shopifyAllProducts.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                (p.tags || '').toLowerCase().includes(q) ||
+                (p.type || '').toLowerCase().includes(q)
+            );
+            renderShopifyProducts(filtered);
+        }
+        function selectAllShopify(checked) {
+            document.querySelectorAll('#shopify-picker-grid input[type=checkbox]').forEach(cb => cb.checked = checked);
+            updateSelectionCount();
+        }
+        function updateSelectionCount() {
+            const n = document.querySelectorAll('#shopify-picker-grid input[type=checkbox]:checked').length;
+            document.getElementById('shopify-selection-count').textContent = `${n} producto${n !== 1 ? 's' : ''} seleccionado${n !== 1 ? 's' : ''}`;
+            document.getElementById('btn-confirm-import').innerHTML =
+                `<i class="fa-solid fa-cloud-arrow-down"></i> Importar ${n > 0 ? n + ' Seleccionado' + (n > 1 ? 's' : '') : 'Seleccionados'}`;
+        }
+        function closeShopifyModal() {
+            document.getElementById('shopify-modal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        async function confirmShopifyImport() {
+            const selected = [...document.querySelectorAll('#shopify-picker-grid input[type=checkbox]:checked')].map(cb => parseInt(cb.value));
+            if (!selected.length) { showToast('Selecciona al menos un producto'); return; }
+            const btn = document.getElementById('btn-confirm-import');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importando...';
+            const res = await fetch('/api/shopify/import', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ids: selected })
+            });
+            const d = await res.json();
+            showToast(d.message);
+            if (d.status === 'ok') { closeShopifyModal(); loadCatalog(); }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Importar Seleccionados';
         }
         
         // --- LÓGICA CATÁLOGO MULTIMEDIA ---

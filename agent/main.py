@@ -261,9 +261,33 @@ async def test_shopify():
         return {"status": "ok", "message": f"✅ Conectado · {result.get('shop_name', '')} · {ms}ms"}
     return {"status": "error", "message": f"❌ {result.get('error', 'Error desconocido')}"}
 
+@app.get("/api/shopify/products")
+async def list_shopify_products():
+    """Devuelve la lista de productos de Shopify para previsualizar (no importa)."""
+    client = ShopifyClient()
+    if not client.is_configured():
+        return {"status": "error", "products": [], "message": "Shopify no configurado"}
+    try:
+        productos = await client.get_products()
+        preview = []
+        for p in productos:
+            images = p.get("images", [])
+            variants = p.get("variants", [])
+            preview.append({
+                "id": p.get("id"),
+                "name": p.get("title", "Sin nombre"),
+                "price": variants[0].get("price", "0") if variants else "0",
+                "image": images[0]["src"] if images else "",
+                "tags": p.get("tags", ""),
+                "type": p.get("product_type", "")
+            })
+        return {"status": "ok", "products": preview}
+    except Exception as e:
+        return {"status": "error", "products": [], "message": str(e)[:200]}
+
 @app.post("/api/shopify/import")
-async def import_shopify_products():
-    """Importa productos desde Shopify y los fusiona con el catálogo local."""
+async def import_shopify_products(data: dict = Body(default={})):
+    """Importa productos seleccionados desde Shopify y los fusiona con el catálogo local."""
     client = ShopifyClient()
     if not client.is_configured():
         return {"status": "error", "message": "Shopify no está configurado"}
@@ -272,9 +296,14 @@ async def import_shopify_products():
         if not productos:
             return {"status": "error", "message": "No se encontraron productos o error de conexión"}
 
+        # Filtrar por IDs si se especificaron
+        selected_ids = data.get("ids", [])
+        if selected_ids:
+            productos = [p for p in productos if p.get("id") in selected_ids]
+
         nuevos = client.format_for_catalog(productos)
 
-        # Fusionar con catálogo existente (preservar video y documento que ya tengas)
+        # Fusionar con catálogo existente (preservar video y documento manual)
         catalog_file = "knowledge/catalog.json"
         existente = {}
         if os.path.exists(catalog_file):
@@ -283,7 +312,6 @@ async def import_shopify_products():
 
         for nombre, datos in nuevos.items():
             if nombre in existente:
-                # Preservar campos que el usuario editó manualmente
                 datos["video"] = existente[nombre].get("video", "")
                 datos["documento"] = existente[nombre].get("documento", "")
                 datos["keywords"] = existente[nombre].get("keywords", datos["keywords"])
@@ -292,7 +320,8 @@ async def import_shopify_products():
         with open(catalog_file, "w", encoding="utf-8") as f:
             json.dump(existente, f, indent=2, ensure_ascii=False)
 
-        return {"status": "ok", "message": f"✅ {len(nuevos)} productos importados desde Shopify", "count": len(nuevos)}
+        n = len(nuevos)
+        return {"status": "ok", "message": f"✅ {n} producto{'s' if n != 1 else ''} importado{'s' if n != 1 else ''} correctamente", "count": n}
     except Exception as e:
         return {"status": "error", "message": f"❌ {str(e)[:200]}"}
 
