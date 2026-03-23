@@ -176,15 +176,21 @@
                                 <option value="whapi">Whapi.cloud</option>
                                 <option value="meta">Meta Cloud API</option>
                                 <option value="textmebot">TextMeBot.com</option>
+                                <option value="evolution">Evolution API v2 (Self-hosted)</option>
                             </select>
                         </div>
                         <div id="fields-whapi"><div class="form-group"><label>Whapi Token</label><input type="text" id="whapi-token" placeholder="wh_..."></div></div>
-                        <div id="fields-meta" class="hidden">
+                        <div id="fields-meta" style="display:none">
                             <div class="form-group"><label>Meta Admin Token</label><input type="text" id="meta-token"></div>
                             <div class="form-group"><label>Phone ID</label><input type="text" id="meta-phone"></div>
                             <div class="form-group"><label>WABA ID</label><input type="text" id="meta-waba"></div>
                         </div>
-                        <div id="fields-textmebot" class="hidden"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
+                        <div id="fields-textmebot" style="display:none"><div class="form-group"><label>TextMeBot API Key</label><input type="text" id="textmebot-key"></div></div>
+                        <div id="fields-evolution" style="display:none">
+                            <div class="form-group"><label><i class="fa-solid fa-server"></i> URL del Servidor Evolution</label><input type="text" id="evolution-url" placeholder="https://tu-servidor.com"></div>
+                            <div class="form-group"><label><i class="fa-solid fa-key"></i> Global API Key</label><input type="password" id="evolution-key" placeholder="Tu API Key de Evolution"></div>
+                            <div class="form-group"><label><i class="fa-solid fa-mobile-screen"></i> Nombre de la Instancia</label><input type="text" id="evolution-instance" placeholder="Ej: CarlaBot"></div>
+                        </div>
                         <button class="btn" id="btn-test-wa" onclick="testWA()" style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.3);">
                             <i class="fa-solid fa-satellite-dish"></i> Probar Canal
                         </button>
@@ -428,6 +434,9 @@
         }
 
         async function testWA() {
+            const provider = document.getElementById('prov-selector').value;
+            if (provider === 'evolution') { testEvolution(); return; }
+
             const badge = document.getElementById('wa-status');
             const btn = document.getElementById('btn-test-wa');
             badge.className = 'status-badge testing';
