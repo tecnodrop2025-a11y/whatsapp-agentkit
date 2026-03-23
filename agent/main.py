@@ -86,18 +86,21 @@ async def webhook_handler(request: Request):
             # Procesar el mensaje con el cerebro
             respuesta = await generar_respuesta(msg.texto, historial)
 
-            # --- NUEVA LÓGICA: Separar mensajes por párrafos para que sea más humano ---
+            # --- Lógica de envío humano: Separar mensajes por párrafos ---
             import asyncio
             # Dividir por doble salto de línea
-            bloques = [b.strip() for b in respuesta.split("\n\n") if b.strip()]
+            bloques_raw = [b.strip() for b in respuesta.split("\n\n") if b.strip()]
+            
+            # Filtrar bloques que solo contengan símbolos como --- o --
+            bloques = [b for b in bloques_raw if any(c.isalnum() for c in b)]
             
             for index, bloque in enumerate(bloques):
                 # Enviar cada bloque por separado
                 await proveedor.enviar_mensaje(msg.telefono, bloque)
                 
-                # Si no es el último bloque, esperar un poco para simular escritura humana
+                # Pausa natural para simular "Carla está escribiendo..."
                 if index < len(bloques) - 1:
-                    await asyncio.sleep(1.5)  # Espera de 1.5 segundos entre mensajes
+                    await asyncio.sleep(2.0)  # Pausa de 2 segundos
 
             # Guardar mensaje del usuario Y respuesta del agente en memoria
             await guardar_mensaje(msg.telefono, "user", msg.texto)

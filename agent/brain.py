@@ -48,11 +48,23 @@ def cargar_conocimiento() -> str:
 
 
 def cargar_system_prompt() -> str:
-    """Lee el system prompt y le añade el conocimiento de los archivos .txt."""
+    """Lee el system prompt, añade conocimiento y la FECHA/HORA actual."""
+    from datetime import datetime
+    import pytz
+    
+    # Configurar zona horaria de Santiago de Chile
+    tz = pytz.timezone('America/Santiago')
+    ahora = datetime.now(tz)
+    fecha_hora_str = ahora.strftime("%A, %d de %B de %Y, %H:%M")
+    
     config = cargar_config_prompts()
     prompt_base = config.get("system_prompt", "Eres un asistente útil.")
     conocimiento = cargar_conocimiento()
-    return f"{prompt_base}\n{conocimiento}"
+    
+    # Inyectar contexto temporal al inicio
+    contexto_temporal = f"\n[CONTEXTO TEMPORAL]: Hoy es {fecha_hora_str} en Santiago de Chile.\n"
+    
+    return f"{contexto_temporal}\n{prompt_base}\n{conocimiento}"
 
 
 def obtener_mensaje_error() -> str:
